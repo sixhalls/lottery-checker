@@ -12,7 +12,20 @@
         1,
         10
       ],
-      "track": null
+      "track": {
+        "enabled": true,
+        "totalPeriods": 12,
+        "startPeriod": "26074",
+        "endPeriod": "26085",
+        "history": [
+          {
+            "period": "26073",
+            "prize": 0,
+            "summary": "未中奖",
+            "hasVariable": false
+          }
+        ]
+      }
     },
     {
       "front": [

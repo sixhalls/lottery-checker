@@ -136,12 +136,9 @@ def compare_all(user_front, user_back, draw_front, draw_back, game):
     return results
 
 # ==================== Fetch data ====================
-def fetch_url(url, timeout=15, extra_headers=None):
+def fetch_url(url, timeout=15):
     try:
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        if extra_headers:
-            headers.update(extra_headers)
-        req = urllib.request.Request(url, headers=headers)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8", errors="replace")
     except Exception as e:
@@ -168,11 +165,8 @@ def fetch_dlt():
     return None
 
 def fetch_ssq():
-    # Source 1: cwl.gov.cn API (needs Referer header)
-    html = fetch_url(
-        "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=ssq&issueCount=3",
-        extra_headers={"Referer": "https://www.cwl.gov.cn/yulekj/ssq/", "Accept": "application/json"}
-    )
+    # Source 1: cwl.gov.cn API
+    html = fetch_url("https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=ssq&issueCount=3")
     if html:
         try:
             data = json.loads(html)
@@ -186,10 +180,9 @@ def fetch_ssq():
     # Source 2: 17500.cn (works from overseas)
     html = fetch_url("https://m.17500.cn/win/list/lotid/ssq.html")
     if html:
-        # 优先匹配 "20xxxxx" 格式的期号（如 2026075）
-        m = re.search(r'(20\d{5})\s*(?:期)?[\s\S]*?(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*[+\s]*(\d{2})', html)
+        m = re.search(r'(\d{5,7})\s*(?:期)?[\s\S]*?(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*[+\s]*(\d{2})', html)
         if m:
-            return {"period": m.group(1), "date": "", "red": [int(m.group(i)) for i in range(2,8)], "blue": [int(m.group(8))]}
+            return {"period": m.group(1).lstrip('0'), "date": "", "red": [int(m.group(i)) for i in range(2,8)], "blue": [int(m.group(8))]}
 
     # Source 3: 78500
     html = fetch_url("https://kaijiang.78500.cn/ssq/")
@@ -286,10 +279,9 @@ def main():
             else:
                 f_hits = len([n for n in u_front if n in draw_front])
                 b_hits = len([n for n in u_back if n in draw_back])
-                if f_hits > 0 or b_hits > 0:
-                    front_name = "前区" if game == "dlt" else "红球"
-                    back_name = "后区" if game == "dlt" else "蓝球"
-                    push_msgs.append(f"{game_name}第{period}期 第{i+1}组：未中奖（{front_name}命中{f_hits}，{back_name}命中{b_hits}）")
+                front_name = "前区" if game == "dlt" else "红球"
+                back_name = "后区" if game == "dlt" else "蓝球"
+                push_msgs.append(f"{game_name}第{period}期 第{i+1}组：未中奖（{front_name}命中{f_hits}，{back_name}命中{b_hits}）")
 
     # Push notification
     if push_msgs:

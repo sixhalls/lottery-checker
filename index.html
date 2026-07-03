@@ -215,7 +215,7 @@ const PRIZE_INFO = {
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
 let latestData = {
   dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] },
-  ssq: { period: '2026070', date: '', red: [8,12,18,21,24,30], blue: [1] }
+  ssq: { period: '459174', date: '', red: [8,12,18,21,24,30], blue: [1] }
 };
 
 function combinations(arr,k){
@@ -697,7 +697,7 @@ const DEFAULT_PRESETS = {
 
 function init(){
   // EMBEDDED 格式必须带空格，与 check_lottery.py 的正则匹配
-  const EMBEDDED={dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] }, ssq: { period: '2026070', date: '', red: [8,12,18,21,24,30], blue: [1] }};
+  const EMBEDDED={dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] }, ssq: { period: '459174', date: '', red: [8,12,18,21,24,30], blue: [1] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
   if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}

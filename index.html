@@ -386,12 +386,13 @@ function checkTrackPeriod(p,drawData){
     setTimeout(()=>{if(confirm('期数全部完毕，是否去购买？\n共 '+p.track.totalPeriods+' 期已完成\n累计奖金：'+formatMoney(grandTotal)+'元'))window.open('https://www.lottery.gov.cn/','_blank');},500);
   }
 }
-async function syncToCloud(){
+async function syncToCloud(silent){
   if(!cloudLoaded)return;
   const badge=document.getElementById('sync-badge');
   const deviceChanged=checkDeviceChange();
   let token=localStorage.getItem(GH_TOKEN_KEY)||'';
   if(!token||deviceChanged){
+    if(silent){badge.className='sync-badge sync-off';badge.textContent=deviceChanged?'需重新输入':'未同步';return;}
     token=prompt((deviceChanged?'检测到新设备或浏览器，需重新输入同步令牌。\n\n':'首次同步需要输入GitHub Token（用于推送号码到云端）。\n\n')+'Token只会存在本地浏览器，不会上传。\n\n请在 https://github.com/settings/tokens 创建（需repo权限）：');
     if(!token){badge.className='sync-badge sync-off';badge.textContent=deviceChanged?'需重新输入':'未同步';return;}
     localStorage.setItem(GH_TOKEN_KEY,token);
@@ -504,7 +505,7 @@ async function fetchLatest(){
     const presets=getPreset();
     let trackUpdated=false;
     for(const p of presets){if(p.track&&p.track.enabled){const d=latestData[currentGame];if(d.period){checkTrackPeriod(p,d);trackUpdated=true;}}}
-    if(trackUpdated){savePresetLocal();renderPreset();syncToCloud();}
+    if(trackUpdated){savePresetLocal();renderPreset();syncToCloud(true);}
   }catch(e){sb.textContent='获取失败：'+e.message;showToast('数据获取失败，稍后重试','error');}
 }
 async function fetchDLT(){

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -17,8 +17,9 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
 .tab-btn.active-ssq{background:linear-gradient(135deg,#1565c0,#2196f3);color:#fff}
 
 .card{background:rgba(255,255,255,.05);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,.08)}
-.card h3{font-size:14px;color:#8899aa;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.card h3 .badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:400}
+.card h3{font-size:14px;color:#8899aa;margin-bottom:10px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.h3-left{display:flex;align-items:center;gap:6px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:400}
 .badge-dlt{background:rgba(231,76,60,.2);color:#e74c3c}
 .badge-ssq{background:rgba(33,150,243,.2);color:#2196f3}
 
@@ -30,7 +31,8 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
 .ball-blue{background:linear-gradient(135deg,#1565c0,#2196f3)}
 .ball-sep{color:#445;font-size:22px;margin:0 2px}
 .no-data{color:#445;font-style:italic;font-size:13px}
-.refresh-btn{margin-top:8px;padding:6px 16px;border-radius:8px;border:1px solid #2a3a5c;background:rgba(255,255,255,.06);color:#8899aa;cursor:pointer;font-size:12px}
+.refresh-btn{padding:4px 14px;border-radius:8px;border:1px solid #2a3a5c;background:rgba(255,255,255,.06);color:#8899aa;cursor:pointer;font-size:12px;white-space:nowrap}
+.refresh-btn:hover{background:rgba(255,255,255,.1)}
 
 .ball-picker-label{font-size:12px;color:#6b7fa3;margin-bottom:6px;display:flex;justify-content:space-between}
 .ball-picker{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
@@ -58,18 +60,42 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
 .mball-sep{color:#445;font-size:14px;margin:0 1px}
 .del-btn{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(231,76,60,.25);color:#e74c3c;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
 
+/* 结果卡片 — 颜色编码：未中奖=绿，一二等奖=红，其他中奖=黄 */
 .result-card{padding:12px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,.06)}
-.result-win{background:linear-gradient(135deg,rgba(243,156,18,.12),rgba(241,196,15,.08));border-color:rgba(243,156,18,.25)}
-.result-lose{background:rgba(255,255,255,.02)}
+.result-lose{background:linear-gradient(135deg,rgba(39,174,96,.08),rgba(46,204,113,.04));border-color:rgba(39,174,96,.15)}
+.result-high{background:linear-gradient(135deg,rgba(231,76,60,.15),rgba(192,57,43,.08));border-color:rgba(231,76,60,.35)}
+.result-win{background:linear-gradient(135deg,rgba(243,156,18,.12),rgba(241,196,15,.06));border-color:rgba(243,156,18,.25)}
 .result-label{font-size:12px;color:#6b7fa3;margin-bottom:4px}
 .result-prize{font-size:22px;font-weight:900}
+.result-prize.lose{color:#2ecc71}
+.result-prize.high{color:#e74c3c;text-shadow:0 0 12px rgba(231,76,60,.3)}
 .result-prize.win{color:#f1c40f;text-shadow:0 0 12px rgba(241,196,15,.3)}
-.result-prize.lose{color:#445}
+.result-amount{font-size:14px;font-weight:700;margin-top:2px}
+.result-amount.fixed{color:#f1c40f}
+.result-amount.variable{color:#e74c3c}
+.result-amount a{color:#e74c3c;text-decoration:underline;font-weight:700}
 .result-detail{font-size:12px;color:#6b7fa3;margin-top:4px}
 .result-combos{margin-top:6px}
 .result-combos .combo{font-size:11px;color:#8aa;padding:2px 0}
 .hit .mball-red{background:linear-gradient(135deg,#f39c12,#f1c40f);color:#1a1a2e}
 .hit .mball-blue{background:linear-gradient(135deg,#f39c12,#f1c40f);color:#1a1a2e}
+
+/* 追号管理 */
+.zhuihao-status{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.zh-stat{flex:1;min-width:80px;background:rgba(255,255,255,.03);border-radius:8px;padding:8px;text-align:center}
+.zh-stat .zh-label{font-size:10px;color:#567;margin-bottom:2px}
+.zh-stat .zh-val{font-size:15px;font-weight:700;color:#e0e0e0}
+.zh-stat .zh-val.accent{color:#9b59b6}
+.zh-stat .zh-val.win-color{color:#f1c40f}
+.zh-progress{height:6px;background:rgba(255,255,255,.08);border-radius:3px;margin-bottom:8px;overflow:hidden}
+.zh-progress-bar{height:100%;background:linear-gradient(90deg,#8e44ad,#9b59b6);border-radius:3px;transition:width .3s}
+.zh-setup{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.zh-setup input{width:70px;background:rgba(0,0,0,.3);border:1px solid #2a3a5c;border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:14px;text-align:center;outline:none}
+.zh-history{margin-top:8px;max-height:200px;overflow-y:auto}
+.zh-history-item{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:4px;font-size:12px}
+.zh-history-item .zh-prize{font-weight:700;white-space:nowrap;margin-left:8px}
+.zh-history-item .zh-prize.win-color{color:#f1c40f}
+.zh-history-item .zh-prize.lose-color{color:#2ecc71}
 
 .manual-row{margin-bottom:8px}
 .manual-row input{width:100%;background:rgba(0,0,0,.3);border:1px solid #2a3a5c;border-radius:8px;padding:8px 12px;color:#e0e0e0;font-size:14px;outline:none}
@@ -100,13 +126,12 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
   </div>
 
   <div class="card">
-    <h3 id="latest-title">最新开奖 <span class="badge badge-dlt">大乐透</span></h3>
+    <h3><span class="h3-left">最新开奖 <span class="badge badge-dlt" id="latest-badge">大乐透</span></span><button class="refresh-btn" onclick="fetchLatest()">刷新</button></h3>
     <div id="latest-info"><div class="no-data">获取中...</div></div>
-    <button class="refresh-btn" onclick="fetchLatest()">刷新数据</button>
   </div>
 
   <div class="card">
-    <h3 class="collapsible" onclick="toggleCollapse('picker-body')">添加号码</h3>
+    <h3 class="collapsible" onclick="toggleCollapse('picker-body')"><span class="h3-left">添加号码</span></h3>
     <div id="picker-body" class="collapse-body">
       <div class="ball-picker-label">
         <span id="front-label">前区（选5-18个，超5为复式）</span>
@@ -127,19 +152,26 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
   </div>
 
   <div class="card">
-    <h3 class="collapsible" onclick="toggleCollapse('preset-body')">我的号码 <span id="preset-total" style="font-size:11px;color:#567"></span></h3>
+    <h3 class="collapsible" onclick="toggleCollapse('preset-body')"><span class="h3-left">我的号码 <span id="preset-total" style="font-size:11px;color:#567"></span></span></h3>
     <div id="preset-body" class="collapse-body">
       <div id="preset-list"></div>
     </div>
   </div>
 
   <div class="card">
-    <h3>对比结果</h3>
+    <h3 class="collapsible" onclick="toggleCollapse('zhuihao-body')"><span class="h3-left">追号管理 <span id="zhuihao-status-badge" style="font-size:11px;color:#567"></span></span></h3>
+    <div id="zhuihao-body" class="collapse-body">
+      <div id="zhuihao-content"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="h3-left">对比结果</span><button class="refresh-btn" onclick="fetchLatest()">刷新</button></h3>
     <div id="result-list"></div>
   </div>
 
   <div class="card">
-    <h3 class="collapsible collapsed" onclick="toggleCollapse('manual-body')">手动查询</h3>
+    <h3 class="collapsible collapsed" onclick="toggleCollapse('manual-body')"><span class="h3-left">手动查询</span></h3>
     <div id="manual-body" class="collapse-body" style="max-height:0">
       <div class="manual-row"><input id="manual-period" placeholder="期号，如 26073"></div>
       <div class="manual-row"><input id="manual-numbers" placeholder="开奖号码，如 04 10 22 23 33 + 02 12"></div>
@@ -156,6 +188,30 @@ const CONFIG = {
   dlt: {name:'大乐透',frontMin:5,frontMax:35,frontNeed:5,backMin:2,backMax:12,backNeed:2,frontName:'前区',backName:'后区'},
   ssq: {name:'双色球',frontMin:6,frontMax:33,frontNeed:6,backMin:1,backMax:16,backNeed:1,frontName:'红球',backName:'蓝球'}
 };
+
+// 奖金信息：variable=true 表示浮动奖金（一二等奖），需去官网查询
+const PRIZE_INFO = {
+  dlt: {
+    1:{name:'一等奖',variable:true},
+    2:{name:'二等奖',variable:true},
+    3:{name:'三等奖',amount:10000},
+    4:{name:'四等奖',amount:3000},
+    5:{name:'五等奖',amount:300},
+    6:{name:'六等奖',amount:200},
+    7:{name:'七等奖',amount:100},
+    8:{name:'八等奖',amount:15},
+    9:{name:'九等奖',amount:5}
+  },
+  ssq: {
+    1:{name:'一等奖',variable:true},
+    2:{name:'二等奖',variable:true},
+    3:{name:'三等奖',amount:3000},
+    4:{name:'四等奖',amount:200},
+    5:{name:'五等奖',amount:10},
+    6:{name:'六等奖',amount:5}
+  }
+};
+
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
 let latestData = {
   dlt:{period:'',date:'',front:[],back:[]},
@@ -170,24 +226,24 @@ function combinations(arr,k){
 function C(n,k){if(k>n||k<0)return 0;if(k===0||k===n)return 1;let r=1;for(let i=0;i<k;i++)r=r*(n-i)/(i+1);return Math.round(r)}
 
 function prizeDLT(f,b){
-  if(f===5&&b===2)return{level:1,name:'一等奖'};
-  if(f===5&&b===1)return{level:2,name:'二等奖'};
-  if(f===5&&b===0)return{level:3,name:'三等奖'};
-  if(f===4&&b===2)return{level:4,name:'四等奖'};
-  if(f===4&&b===1)return{level:5,name:'五等奖'};
-  if(f===3&&b===2)return{level:6,name:'六等奖'};
-  if(f===4&&b===0)return{level:7,name:'七等奖'};
-  if((f===3&&b===1)||(f===2&&b===2))return{level:8,name:'八等奖'};
-  if((f===3&&b===0)||(f===2&&b===1)||(f===1&&b===2)||(f===0&&b===2))return{level:9,name:'九等奖'};
+  if(f===5&&b===2)return{level:1,...PRIZE_INFO.dlt[1]};
+  if(f===5&&b===1)return{level:2,...PRIZE_INFO.dlt[2]};
+  if(f===5&&b===0)return{level:3,...PRIZE_INFO.dlt[3]};
+  if(f===4&&b===2)return{level:4,...PRIZE_INFO.dlt[4]};
+  if(f===4&&b===1)return{level:5,...PRIZE_INFO.dlt[5]};
+  if(f===3&&b===2)return{level:6,...PRIZE_INFO.dlt[6]};
+  if(f===4&&b===0)return{level:7,...PRIZE_INFO.dlt[7]};
+  if((f===3&&b===1)||(f===2&&b===2))return{level:8,...PRIZE_INFO.dlt[8]};
+  if((f===3&&b===0)||(f===2&&b===1)||(f===1&&b===2)||(f===0&&b===2))return{level:9,...PRIZE_INFO.dlt[9]};
   return{level:0,name:'未中奖'};
 }
 function prizeSSQ(r,b){
-  if(r===6&&b===1)return{level:1,name:'一等奖'};
-  if(r===6&&b===0)return{level:2,name:'二等奖'};
-  if(r===5&&b===1)return{level:3,name:'三等奖'};
-  if((r===5&&b===0)||(r===4&&b===1))return{level:4,name:'四等奖'};
-  if((r===4&&b===0)||(r===3&&b===1))return{level:5,name:'五等奖'};
-  if((r===2&&b===1)||(r===1&&b===1)||(r===0&&b===1))return{level:6,name:'六等奖'};
+  if(r===6&&b===1)return{level:1,...PRIZE_INFO.ssq[1]};
+  if(r===6&&b===0)return{level:2,...PRIZE_INFO.ssq[2]};
+  if(r===5&&b===1)return{level:3,...PRIZE_INFO.ssq[3]};
+  if((r===5&&b===0)||(r===4&&b===1))return{level:4,...PRIZE_INFO.ssq[4]};
+  if((r===4&&b===0)||(r===3&&b===1))return{level:5,...PRIZE_INFO.ssq[5]};
+  if((r===2&&b===1)||(r===1&&b===1)||(r===0&&b===1))return{level:6,...PRIZE_INFO.ssq[6]};
   return{level:0,name:'未中奖'};
 }
 
@@ -218,11 +274,163 @@ function parseDrawNumbers(str){
 function getPreset(){try{return JSON.parse(localStorage.getItem('lottery_v2_'+currentGame)||'[]');}catch{return[];}}
 function savePreset(d){localStorage.setItem('lottery_v2_'+currentGame,JSON.stringify(d));}
 
+// ==================== 追号管理 ====================
+function getZhuihao(){try{return JSON.parse(localStorage.getItem('lottery_zhuihao_'+currentGame)||'null');}catch{return null;}}
+function saveZhuihao(zh){localStorage.setItem('lottery_zhuihao_'+currentGame,JSON.stringify(zh));}
+
+function formatMoney(n){
+  if(n>=10000)return(n/10000).toFixed(1)+'万';
+  return n.toString();
+}
+
+function calcPeriodPrize(results,game){
+  let total=0;
+  for(const r of results){
+    const info=PRIZE_INFO[game][r.level];
+    if(info&&info.amount)total+=info.amount;
+  }
+  return total;
+}
+
+function renderZhuihao(){
+  const el=document.getElementById('zhuihao-content'),badge=document.getElementById('zhuihao-status-badge');
+  const zh=getZhuihao();
+  if(!zh||!zh.enabled){
+    badge.textContent='';
+    el.innerHTML=`<div class="zh-setup">
+      <span style="color:#6b7fa3;font-size:13px">追号期数：</span>
+      <input id="zh-periods" type="number" min="1" max="99" value="5" placeholder="期数">
+      <button class="btn btn-purple" onclick="startZhuihao()">开始追号</button>
+    </div>
+    <div style="font-size:11px;color:#567">设置后，每期开奖自动跟踪对比，剩余1期和全部完成时提醒</div>`;
+    return;
+  }
+
+  const done=zh.history.length;
+  const remain=zh.totalPeriods-done;
+  const totalPrize=zh.history.reduce((s,h)=>s+(h.prize||0),0);
+  const progress=Math.round(done/zh.totalPeriods*100);
+  const hasVariable=zh.history.some(h=>h.hasVariable);
+
+  badge.textContent=remain>0?`追号中 ${done}/${zh.totalPeriods}`:'追号完成';
+  badge.style.color=remain>0?'#9b59b6':'#27ae60';
+
+  let historyH='';
+  if(zh.history.length>0){
+    historyH='<div class="zh-history">'+zh.history.slice().reverse().map(h=>{
+      const winClass=h.prize>0?'win-color':'lose-color';
+      const prizeText=h.prize>0?`+${formatMoney(h.prize)}元`:'未中奖';
+      return`<div class="zh-history-item"><span>第${h.period}期 ${h.summary||''}</span><span class="zh-prize ${winClass}">${prizeText}</span></div>`;
+    }).join('')+'</div>';
+  }
+
+  let prizeDisplay=totalPrize>0?formatMoney(totalPrize)+'元':'—';
+  if(hasVariable)prizeDisplay+=' <span style="font-size:10px;color:#e74c3c">(含浮动)</span>';
+
+  el.innerHTML=`
+    <div class="zhuihao-status">
+      <div class="zh-stat"><div class="zh-label">起始期号</div><div class="zh-val">${zh.startPeriod}</div></div>
+      <div class="zh-stat"><div class="zh-label">结束期号</div><div class="zh-val">${zh.endPeriod}</div></div>
+      <div class="zh-stat"><div class="zh-label">进度</div><div class="zh-val accent">${done}/${zh.totalPeriods}</div></div>
+      <div class="zh-stat"><div class="zh-label">累计奖金</div><div class="zh-val win-color">${prizeDisplay}</div></div>
+    </div>
+    <div class="zh-progress"><div class="zh-progress-bar" style="width:${progress}%"></div></div>
+    ${historyH}
+    <div class="action-row" style="margin-top:8px">
+      <button class="btn btn-gray" onclick="stopZhuihao()">停止追号</button>
+    </div>
+  `;
+}
+
+function startZhuihao(){
+  const input=document.getElementById('zh-periods');
+  const periods=parseInt(input.value);
+  if(!periods||periods<1||periods>99){showToast('请输入1-99的期数','error');return;}
+
+  const d=latestData[currentGame];
+  if(!d.period){showToast('请先获取最新开奖数据','error');return;}
+
+  const startPeriod=d.period;
+  const startNum=parseInt(startPeriod.replace(/\D/g,''));
+  const endNum=startNum+periods-1;
+  const endPeriod=String(endNum);
+
+  const zh={
+    enabled:true,
+    totalPeriods:periods,
+    startPeriod:startPeriod,
+    endPeriod:endPeriod,
+    history:[]
+  };
+
+  // 立即检查当前期
+  checkZhuihaoPeriod(zh,d);
+  saveZhuihao(zh);
+  renderZhuihao();
+  showToast(`追号已开启：${startPeriod} → ${endPeriod}，共${periods}期`,'success');
+}
+
+function stopZhuihao(){
+  saveZhuihao(null);
+  renderZhuihao();
+  showToast('追号已停止','info');
+}
+
+function checkZhuihaoPeriod(zh,drawData){
+  const game=currentGame;
+  const period=drawData.period;
+
+  // 已记录过的期号跳过
+  if(zh.history.find(h=>h.period===period))return;
+
+  const presets=getPreset();
+  const dF=game==='dlt'?drawData.front:drawData.red;
+  const dB=game==='dlt'?drawData.back:drawData.blue;
+
+  let allResults=[],totalPrize=0,summaryParts=[],hasVariable=false;
+  for(const p of presets){
+    const{results}=compareAll(p.front,p.back,dF,dB,game);
+    if(results.length>0){
+      allResults=allResults.concat(results);
+      if(results.some(r=>{const info=PRIZE_INFO[game][r.level];return info&&info.variable;}))hasVariable=true;
+      const lc={};
+      results.forEach(r=>{lc[r.name]=(lc[r.name]||0)+1;});
+      summaryParts.push(Object.entries(lc).map(([n,c])=>`${n}×${c}`).join('，'));
+    }
+  }
+  totalPrize=calcPeriodPrize(allResults,game);
+
+  let summary=summaryParts.length>0?summaryParts.join('；'):'未中奖';
+  if(hasVariable)summary+='（含浮动）';
+
+  zh.history.push({period:period,prize:totalPrize,summary:summary,hasVariable:hasVariable});
+
+  // 提醒检查
+  const done=zh.history.length;
+  const remain=zh.totalPeriods-done;
+
+  if(remain===1){
+    setTimeout(()=>{
+      if(confirm(`期数还剩1期，是否去购买？\n已完成 ${done}/${zh.totalPeriods} 期\n累计奖金：${formatMoney(zh.history.reduce((s,h)=>s+(h.prize||0),0))}元`)){
+        window.open(game==='dlt'?'https://www.lottery.gov.cn/':'https://www.cwl.gov.cn/','_blank');
+      }
+    },500);
+  }else if(remain===0){
+    setTimeout(()=>{
+      const grandTotal=zh.history.reduce((s,h)=>s+(h.prize||0),0);
+      if(confirm(`期数全部完毕，是否去购买？\n共 ${zh.totalPeriods} 期已完成\n累计奖金：${formatMoney(grandTotal)}元`)){
+        window.open(game==='dlt'?'https://www.lottery.gov.cn/':'https://www.cwl.gov.cn/','_blank');
+      }
+    },500);
+  }
+}
+
 function switchTab(game){
   currentGame=game;
   document.getElementById('tab-dlt').className=game==='dlt'?'tab-btn active-dlt':'tab-btn';
   document.getElementById('tab-ssq').className=game==='ssq'?'tab-btn active-ssq':'tab-btn';
-  selectedFront.clear();selectedBack.clear();buildPickers();renderLatest();renderPreset();renderResults();
+  selectedFront.clear();selectedBack.clear();
+  buildPickers();renderLatest();renderPreset();renderResults();renderZhuihao();
 }
 
 function buildPickers(){
@@ -256,9 +464,10 @@ function updatePickerInfo(){
 }
 
 function renderLatest(){
-  const el=document.getElementById('latest-info'), tEl=document.getElementById('latest-title');
+  const el=document.getElementById('latest-info'),badge=document.getElementById('latest-badge');
   const bc=currentGame==='dlt'?'badge-dlt':'badge-ssq';
-  tEl.innerHTML=`最新开奖 <span class="badge ${bc}">${CONFIG[currentGame].name}</span>`;
+  badge.className=`badge ${bc}`;
+  badge.textContent=CONFIG[currentGame].name;
   if(currentGame==='dlt'){
     const d=latestData.dlt;
     if(!d.period){el.innerHTML='<div class="no-data">暂无数据，点击刷新获取</div>';return;}
@@ -291,27 +500,63 @@ function renderResults(drawNums,drawPeriod){
   if(presets.length===0){el.innerHTML='<div class="no-data">请先添加号码</div>';return;}
   let dF,dB,period;
   if(drawNums){dF=drawNums.main;dB=drawNums.back;period=drawPeriod||'?';}
-  else if(currentGame==='dlt'){const d=latestData.dlt;if(!d.period){el.innerHTML='<div class="no-data">暂无开奖数据</div>';return;}dF=d.front;dB=d.back;period=d.period;}
-  else{const d=latestData.ssq;if(!d.period){el.innerHTML='<div class="no-data">暂无开奖数据</div>';return;}dF=d.red;dB=d.blue;period=d.period;}
-  
+  else if(currentGame==='dlt'){const d=latestData.dlt;if(!d.period){el.innerHTML='<div class="no-data">暂无开奖数据，点击上方刷新获取</div>';return;}dF=d.front;dB=d.back;period=d.period;}
+  else{const d=latestData.ssq;if(!d.period){el.innerHTML='<div class="no-data">暂无开奖数据，点击上方刷新获取</div>';return;}dF=d.red;dB=d.blue;period=d.period;}
+
   el.innerHTML=presets.map((p,i)=>{
     const{results,bestLevel}=compareAll(p.front,p.back,dF,dB,currentGame);
-    const isWin=bestLevel>0, cc=isWin?'result-card result-win':'result-card result-lose', pc=isWin?'result-prize win':'result-prize lose';
+    const isWin=bestLevel>0;
+
+    // 颜色编码：未中奖=绿，一二等奖=红，其他中奖=黄
+    let cardClass,prizeClass;
+    if(!isWin){cardClass='result-card result-lose';prizeClass='result-prize lose';}
+    else if(bestLevel<=2){cardClass='result-card result-high';prizeClass='result-prize high';}
+    else{cardClass='result-card result-win';prizeClass='result-prize win';}
+
     const pn=isWin?results.reduce((b,r)=>r.level<b.level?r:b,results[0]).name:'未中奖';
+
+    // 奖金显示
+    let amountH='';
+    if(isWin){
+      const bestInfo=PRIZE_INFO[currentGame][bestLevel];
+      const hasVariable=results.some(r=>{const info=PRIZE_INFO[currentGame][r.level];return info&&info.variable;});
+      const hasFixed=results.some(r=>{const info=PRIZE_INFO[currentGame][r.level];return info&&info.amount;});
+
+      if(bestInfo&&bestInfo.variable){
+        // 最高奖级是浮动奖金
+        let txt='<div class="result-amount variable">⚠ 浮动奖金，<a href="#" onclick="window.open(\'https://www.lottery.gov.cn/\',\'_blank\');return false">去官方网站查</a>';
+        if(hasFixed){
+          let fixedTotal=0;
+          results.forEach(r=>{const info=PRIZE_INFO[currentGame][r.level];if(info&&info.amount)fixedTotal+=info.amount;});
+          txt+=`（另含固定奖金 ${formatMoney(fixedTotal)} 元）`;
+        }
+        txt+='</div>';
+        amountH=txt;
+      }else{
+        // 固定奖金
+        let fixedTotal=0;
+        results.forEach(r=>{const info=PRIZE_INFO[currentGame][r.level];if(info&&info.amount)fixedTotal+=info.amount;});
+        let txt=`<div class="result-amount fixed">固定奖金 ${formatMoney(fixedTotal)} 元`;
+        if(hasVariable)txt+=' <span style="color:#e74c3c;font-size:12px">（另含浮动奖金，去官网查）</span>';
+        txt+='</div>';
+        amountH=txt;
+      }
+    }
+
     let comboH='';
     if(results.length>0){
       const shown=results.slice(0,10);
       comboH='<div class="result-combos">'+shown.map(r=>{
         const hF=r.front.filter(n=>dF.includes(n)),hB=r.back.filter(n=>dB.includes(n));
-        return`<div class="combo">${ballHTML(r.front,'red',hF)}<span class="mball-sep">+</span>${ballHTML(r.back,'blue',hB)} \u2192 ${r.name}</div>`;
+        return`<div class="combo">${ballHTML(r.front,'red',hF)}<span class="mball-sep">+</span>${ballHTML(r.back,'blue',hB)} → ${r.name}</div>`;
       }).join('');
       if(results.length>10)comboH+=`<div class="combo" style="color:#f39c12">...还有${results.length-10}注中奖</div>`;
       comboH+='</div>';
     }
     let summaryH='';
-    if(results.length>0){const lc={};results.forEach(r=>{lc[r.name]=(lc[r.name]||0)+1;});summaryH=Object.entries(lc).map(([n,c])=>`${n}\u00d7${c}`).join('\uff0c');}
+    if(results.length>0){const lc={};results.forEach(r=>{lc[r.name]=(lc[r.name]||0)+1;});summaryH=Object.entries(lc).map(([n,c])=>`${n}×${c}`).join('，');}
     const notes=C(p.front.length,cfg.frontNeed)*C(p.back.length,cfg.backNeed);
-    return`<div class="${cc}"><div class="result-label">第${i+1}组 \u2014 第 ${period} 期${notes>1?` (${notes}注复式)`:''}</div><div class="${pc}">${pn}</div><div class="result-detail">${summaryH?'中奖汇总：'+summaryH:`${cfg.frontName}命中0 + ${cfg.backName}命中0`}</div>${comboH}</div>`;
+    return`<div class="${cardClass}"><div class="result-label">第${i+1}组 — 第 ${period} 期${notes>1?` (${notes}注复式)`:''}</div><div class="${prizeClass}">${pn}</div>${amountH}<div class="result-detail">${summaryH?'中奖汇总：'+summaryH:`${cfg.frontName}命中0 + ${cfg.backName}命中0`}</div>${comboH}</div>`;
   }).join('');
 }
 
@@ -339,38 +584,97 @@ function toggleCollapse(id){
 }
 
 async function fetchLatest(){
-  document.getElementById('status-bar').textContent='获取数据中...';
-  try{if(currentGame==='dlt')await fetchDLT();else await fetchSSQ();renderLatest();renderResults();}
-  catch(e){document.getElementById('status-bar').textContent='获取失败：'+e.message;showToast('数据获取失败','error');}
+  const sb=document.getElementById('status-bar');
+  sb.textContent='获取数据中...';
+  try{
+    if(currentGame==='dlt')await fetchDLT();else await fetchSSQ();
+    renderLatest();renderResults();
+    // 追号检查
+    const zh=getZhuihao();
+    if(zh&&zh.enabled){
+      const d=latestData[currentGame];
+      if(d.period)checkZhuihaoPeriod(zh,d);
+      saveZhuihao(zh);renderZhuihao();
+    }
+  }catch(e){sb.textContent='获取失败：'+e.message;showToast('数据获取失败，稍后重试','error');}
 }
 
 async function fetchDLT(){
-  const urls=['https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&provinceId=0&pageSize=3&is498=true','https://www.js-lottery.com/wfzq/dlt/data','https://m.55125.cn/kaijiang/dlt/'];
+  const urls=[
+    'https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&provinceId=0&pageSize=3&is498=true',
+    'https://www.js-lottery.com/wfzq/dlt/data',
+    'https://m.55125.cn/kaijiang/dlt/'
+  ];
   for(const url of urls){try{
     const text=await fetchCORS(url);if(!text)continue;
-    try{const json=JSON.parse(text);if(json.value&&json.value.lstLotteryDrawInfo&&json.value.lstLotteryDrawInfo.length>0){const item=json.value.lstLotteryDrawInfo[0];const nums=item.lotteryDrawResult.split(/\s+/).map(Number);if(nums.length>=7){latestData.dlt={period:item.lotteryDrawNum,date:item.lotteryDrawTime||'',front:nums.slice(0,5),back:nums.slice(5,7)};document.getElementById('status-bar').textContent='大乐透数据已更新';return;}}}catch(e){}
+    // 数据源1: sporttery JSON
+    try{const json=JSON.parse(text);
+      if(json.value&&json.value.lstLotteryDrawInfo&&json.value.lstLotteryDrawInfo.length>0){
+        const item=json.value.lstLotteryDrawInfo[0];
+        const nums=item.lotteryDrawResult.split(/\s+/).map(Number);
+        if(nums.length>=7){
+          latestData.dlt={period:item.lotteryDrawNum,date:item.lotteryDrawTime||'',front:nums.slice(0,5),back:nums.slice(5,7)};
+          localStorage.setItem('lottery_cache_dlt',JSON.stringify(latestData.dlt));
+          document.getElementById('status-bar').textContent='大乐透数据已更新 '+latestData.dlt.period+'期';
+          return;
+        }}}catch(e){}
+    // 数据源2: js-lottery HTML表格
     const m1=text.match(/text-align:center[^>]*>(\d{4}-\d{2}-\d{2})<\/td>\s*<td[^>]*>(\d{5,6})<\/td>\s*<td[^>]*>\s*([\d\s]+?)\s*<\/td>/);
-    if(m1){const nums=m1[3].trim().split(/\s+/).map(Number);if(nums.length>=7){latestData.dlt={period:m1[2],date:m1[1],front:nums.slice(0,5),back:nums.slice(5,7)};document.getElementById('status-bar').textContent='大乐透数据已更新';return;}}
+    if(m1){const nums=m1[3].trim().split(/\s+/).map(Number);if(nums.length>=7){
+      latestData.dlt={period:m1[2],date:m1[1],front:nums.slice(0,5),back:nums.slice(5,7)};
+      localStorage.setItem('lottery_cache_dlt',JSON.stringify(latestData.dlt));
+      document.getElementById('status-bar').textContent='大乐透数据已更新 '+latestData.dlt.period+'期';
+      return;}}
+    // 数据源3: 通用号码匹配
     const m2=text.match(/(\d{5,6})[^\d]*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})/);
-    if(m2){latestData.dlt={period:m2[1],date:'',front:[Number(m2[2]),Number(m2[3]),Number(m2[4]),Number(m2[5]),Number(m2[6])],back:[Number(m2[7]),Number(m2[8])]};document.getElementById('status-bar').textContent='大乐透数据已更新';return;}
+    if(m2){
+      latestData.dlt={period:m2[1],date:'',front:[Number(m2[2]),Number(m2[3]),Number(m2[4]),Number(m2[5]),Number(m2[6])],back:[Number(m2[7]),Number(m2[8])]};
+      localStorage.setItem('lottery_cache_dlt',JSON.stringify(latestData.dlt));
+      document.getElementById('status-bar').textContent='大乐透数据已更新 '+latestData.dlt.period+'期';
+      return;}
   }catch(e){continue;}}
   throw new Error('大乐透数据源均失败');
 }
 
 async function fetchSSQ(){
-  const urls=['https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=ssq&issueCount=3','https://kaijiang.78500.cn/ssq/'];
+  const urls=[
+    'https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=ssq&issueCount=3',
+    'https://m.17500.cn/win/list/lotid/ssq.html',
+    'https://kaijiang.78500.cn/ssq/'
+  ];
   for(const url of urls){try{
     const text=await fetchCORS(url);if(!text)continue;
-    try{const json=JSON.parse(text);if(json.result&&json.result.length>0){const item=json.result[0];latestData.ssq={period:item.code,date:item.date||'',red:item.red.split(/[,\s]+/).map(Number),blue:[Number(item.blue)]};document.getElementById('status-bar').textContent='双色球数据已更新';return;}}catch(e){}
-    const m=text.match(/(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})[^\d+]*\+\s*(\d{2})/);
-    if(m){latestData.ssq={period:'',date:'',red:[Number(m[1]),Number(m[2]),Number(m[3]),Number(m[4]),Number(m[5]),Number(m[6])],blue:[Number(m[7])]};document.getElementById('status-bar').textContent='双色球数据已更新';return;}
+    // 数据源1: cwl.gov.cn JSON
+    try{const json=JSON.parse(text);
+      if(json.result&&json.result.length>0){
+        const item=json.result[0];
+        latestData.ssq={period:item.code,date:item.date||'',red:item.red.split(/[,\s]+/).map(Number),blue:[Number(item.blue)]};
+        localStorage.setItem('lottery_cache_ssq',JSON.stringify(latestData.ssq));
+        document.getElementById('status-bar').textContent='双色球数据已更新 '+latestData.ssq.period+'期';
+        return;}}catch(e){}
+    // 数据源2: 17500.cn HTML
+    const m1=text.match(/(\d{5,7})\s*(?:期)?[\s\S]*?(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*[+\s]*(\d{2})/);
+    if(m1){
+      latestData.ssq={period:m1[1],date:'',red:[Number(m1[2]),Number(m1[3]),Number(m1[4]),Number(m1[5]),Number(m1[6]),Number(m1[7])],blue:[Number(m1[8])]};
+      localStorage.setItem('lottery_cache_ssq',JSON.stringify(latestData.ssq));
+      document.getElementById('status-bar').textContent='双色球数据已更新 '+latestData.ssq.period+'期';
+      return;}
+    // 数据源3: 78500号码匹配
+    const m2=text.match(/(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})[^\d+]*\+\s*(\d{2})/);
+    if(m2){
+      latestData.ssq={period:'',date:'',red:[Number(m2[1]),Number(m2[2]),Number(m2[3]),Number(m2[4]),Number(m2[5]),Number(m2[6])],blue:[Number(m2[7])]};
+      localStorage.setItem('lottery_cache_ssq',JSON.stringify(latestData.ssq));
+      document.getElementById('status-bar').textContent='双色球数据已更新';
+      return;}
   }catch(e){continue;}}
   throw new Error('双色球数据源均失败');
 }
 
 async function fetchCORS(url){
-  try{const r=await fetch(url,{mode:'cors',signal:AbortSignal.timeout(6000)});if(r.ok)return await r.text();}catch(e){}
-  for(const p of[u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,u=>`https://corsproxy.io/?${encodeURIComponent(u)}`]){
+  // 直连
+  try{const r=await fetch(url,{mode:'cors',signal:AbortSignal.timeout(8000)});if(r.ok)return await r.text();}catch(e){}
+  // CORS代理
+  for(const p of[u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,u=>`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`]){
     try{const r=await fetch(p(url),{signal:AbortSignal.timeout(8000)});if(r.ok)return await r.text();}catch(e){continue;}
   }
   return null;
@@ -378,22 +682,46 @@ async function fetchCORS(url){
 
 function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast toast-${type} toast-show`;setTimeout(()=>el.className='toast',2200);}
 
+// 默认预设号码（首次打开时自动加载，用户可自行增删）
+const DEFAULT_PRESETS = {
+  dlt: [],
+  ssq: [
+    {front:[6,9,11,19,20,25],back:[12]},
+    {front:[9,12,17,19,21,23],back:[6]},
+    {front:[1,15,17,20,29,30],back:[15]},
+    {front:[18,19,21,28,30,32],back:[7]},
+    {front:[2,4,16,21,24,29],back:[7]},
+    {front:[4,9,15,17,25,33],back:[14]}
+  ]
+};
+
 function init(){
-  const EMBEDDED={dlt:{period:'',date:'',front:[],back:[]},ssq:{period:'',date:'',red:[],blue:[]}};
+  // EMBEDDED 格式必须带空格，与 check_lottery.py 的正则匹配
+  const EMBEDDED={dlt: { period: '', date: '', front: [], back: [] }, ssq: { period: '', date: '', red: [], blue: [] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
-  if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c)latestData.dlt=c;}catch{}}
-  if(!latestData.ssq.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_ssq')||'null');if(c)latestData.ssq=c;}catch{}}
-  
+  if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}
+  if(!latestData.ssq.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_ssq')||'null');if(c&&c.period)latestData.ssq=c;}catch{}}
+
   // 迁移旧版v1预设
   ['dlt','ssq'].forEach(g=>{
     if(!localStorage.getItem('lottery_v2_'+g)&&localStorage.getItem('lottery_preset_'+g)){
       try{const old=JSON.parse(localStorage.getItem('lottery_preset_'+g));if(Array.isArray(old)){const mig=old.map(p=>({front:p.main||p.front||[],back:p.back||[]}));localStorage.setItem('lottery_v2_'+g,JSON.stringify(mig));}}catch{}
     }
   });
-  
-  buildPickers();renderLatest();renderPreset();renderResults();fetchLatest();
-  setInterval(()=>{if(latestData.dlt.period)localStorage.setItem('lottery_cache_dlt',JSON.stringify(latestData.dlt));if(latestData.ssq.period)localStorage.setItem('lottery_cache_ssq',JSON.stringify(latestData.ssq));},15000);
+
+  // 首次打开加载默认预设
+  ['dlt','ssq'].forEach(g=>{
+    if(!localStorage.getItem('lottery_v2_'+g)&&DEFAULT_PRESETS[g].length>0){
+      localStorage.setItem('lottery_v2_'+g,JSON.stringify(DEFAULT_PRESETS[g]));
+    }
+  });
+
+  buildPickers();renderLatest();renderPreset();renderResults();renderZhuihao();fetchLatest();
+  setInterval(()=>{
+    if(latestData.dlt.period)localStorage.setItem('lottery_cache_dlt',JSON.stringify(latestData.dlt));
+    if(latestData.ssq.period)localStorage.setItem('lottery_cache_ssq',JSON.stringify(latestData.ssq));
+  },15000);
 }
 init();
 </script>

@@ -9,8 +9,8 @@ HTML_FILE = "index.html"
 
 # ==================== Preset numbers (edit here) ====================
 # Format: list of dicts with "front" and "back" keys
-# DLT: front=鍓嶅尯(1-35, select 5+), back=鍚庡尯(1-12, select 2+)
-# SSQ: front=绾㈢悆(1-33, select 6+), back=钃濈悆(1-16, select 1+)
+# DLT: front=前区(1-35, select 5+), back=后区(1-12, select 2+)
+# SSQ: front=红球(1-33, select 6+), back=蓝球(1-16, select 1+)
 PRESETS = {
     "dlt": [
         # Add your DLT numbers here
@@ -29,29 +29,29 @@ PRESETS = {
 # ==================== Prize info ====================
 PRIZE_INFO = {
     "dlt": {
-        1: {"name": "涓€绛夊", "variable": True},
-        2: {"name": "浜岀瓑濂?, "variable": True},
-        3: {"name": "涓夌瓑濂?, "amount": 10000},
-        4: {"name": "鍥涚瓑濂?, "amount": 3000},
-        5: {"name": "浜旂瓑濂?, "amount": 300},
-        6: {"name": "鍏瓑濂?, "amount": 200},
-        7: {"name": "涓冪瓑濂?, "amount": 100},
-        8: {"name": "鍏瓑濂?, "amount": 15},
-        9: {"name": "涔濈瓑濂?, "amount": 5},
+        1: {"name": "一等奖", "variable": True},
+        2: {"name": "二等奖", "variable": True},
+        3: {"name": "三等奖", "amount": 10000},
+        4: {"name": "四等奖", "amount": 3000},
+        5: {"name": "五等奖", "amount": 300},
+        6: {"name": "六等奖", "amount": 200},
+        7: {"name": "七等奖", "amount": 100},
+        8: {"name": "八等奖", "amount": 15},
+        9: {"name": "九等奖", "amount": 5},
     },
     "ssq": {
-        1: {"name": "涓€绛夊", "variable": True},
-        2: {"name": "浜岀瓑濂?, "variable": True},
-        3: {"name": "涓夌瓑濂?, "amount": 3000},
-        4: {"name": "鍥涚瓑濂?, "amount": 200},
-        5: {"name": "浜旂瓑濂?, "amount": 10},
-        6: {"name": "鍏瓑濂?, "amount": 5},
+        1: {"name": "一等奖", "variable": True},
+        2: {"name": "二等奖", "variable": True},
+        3: {"name": "三等奖", "amount": 3000},
+        4: {"name": "四等奖", "amount": 200},
+        5: {"name": "五等奖", "amount": 10},
+        6: {"name": "六等奖", "amount": 5},
     }
 }
 
 def format_money(n):
     if n >= 10000:
-        return f"{n/10000:.1f}涓?
+        return f"{n/10000:.1f}万"
     return str(n)
 
 def calc_prize_amount(results, game):
@@ -89,25 +89,25 @@ def push_wechat(title, content):
 
 # ==================== Prize logic ====================
 def prize_dlt(fh, bh):
-    if fh==5 and bh==2: return 1, "涓€绛夊"
-    if fh==5 and bh==1: return 2, "浜岀瓑濂?
-    if fh==5 and bh==0: return 3, "涓夌瓑濂?
-    if fh==4 and bh==2: return 4, "鍥涚瓑濂?
-    if fh==4 and bh==1: return 5, "浜旂瓑濂?
-    if fh==3 and bh==2: return 6, "鍏瓑濂?
-    if fh==4 and bh==0: return 7, "涓冪瓑濂?
-    if (fh==3 and bh==1) or (fh==2 and bh==2): return 8, "鍏瓑濂?
-    if (fh==3 and bh==0) or (fh==2 and bh==1) or (fh==1 and bh==2) or (fh==0 and bh==2): return 9, "涔濈瓑濂?
-    return 0, "鏈腑濂?
+    if fh==5 and bh==2: return 1, "一等奖"
+    if fh==5 and bh==1: return 2, "二等奖"
+    if fh==5 and bh==0: return 3, "三等奖"
+    if fh==4 and bh==2: return 4, "四等奖"
+    if fh==4 and bh==1: return 5, "五等奖"
+    if fh==3 and bh==2: return 6, "六等奖"
+    if fh==4 and bh==0: return 7, "七等奖"
+    if (fh==3 and bh==1) or (fh==2 and bh==2): return 8, "八等奖"
+    if (fh==3 and bh==0) or (fh==2 and bh==1) or (fh==1 and bh==2) or (fh==0 and bh==2): return 9, "九等奖"
+    return 0, "未中奖"
 
 def prize_ssq(rh, bh):
-    if rh==6 and bh==1: return 1, "涓€绛夊"
-    if rh==6 and bh==0: return 2, "浜岀瓑濂?
-    if rh==5 and bh==1: return 3, "涓夌瓑濂?
-    if (rh==5 and bh==0) or (rh==4 and bh==1): return 4, "鍥涚瓑濂?
-    if (rh==4 and bh==0) or (rh==3 and bh==1): return 5, "浜旂瓑濂?
-    if (rh==2 and bh==1) or (rh==1 and bh==1) or (rh==0 and bh==1): return 6, "鍏瓑濂?
-    return 0, "鏈腑濂?
+    if rh==6 and bh==1: return 1, "一等奖"
+    if rh==6 and bh==0: return 2, "二等奖"
+    if rh==5 and bh==1: return 3, "三等奖"
+    if (rh==5 and bh==0) or (rh==4 and bh==1): return 4, "四等奖"
+    if (rh==4 and bh==0) or (rh==3 and bh==1): return 5, "五等奖"
+    if (rh==2 and bh==1) or (rh==1 and bh==1) or (rh==0 and bh==1): return 6, "六等奖"
+    return 0, "未中奖"
 
 # ==================== Combinations ====================
 def combinations(arr, k):
@@ -186,8 +186,8 @@ def fetch_ssq():
     # Source 2: 17500.cn (works from overseas)
     html = fetch_url("https://m.17500.cn/win/list/lotid/ssq.html")
     if html:
-        # 浼樺厛鍖归厤 "20xxxxx" 鏍煎紡鐨勬湡鍙凤紙濡?2026075锛?
-        m = re.search(r'(20\d{5})\s*(?:鏈??[\s\S]*?(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*[+\s]*(\d{2})', html)
+        # 优先匹配 "20xxxxx" 格式的期号（如 2026075）
+        m = re.search(r'(20\d{5})\s*(?:期)?[\s\S]*?(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*[+\s]*(\d{2})', html)
         if m:
             return {"period": m.group(1), "date": "", "red": [int(m.group(i)) for i in range(2,8)], "blue": [int(m.group(8))]}
 
@@ -208,7 +208,7 @@ def update_html(dlt_data, ssq_data):
     with open(HTML_FILE, "r", encoding="utf-8") as f:
         html = f.read()
 
-    # 姝ｅ垯鍖归厤 EMBEDDED 涓殑 dlt/ssq 鏁版嵁锛堝吋瀹规湁鏃犵┖鏍硷級
+    # 正则匹配 EMBEDDED 中的 dlt/ssq 数据（兼容有无空格）
     if dlt_data:
         dlt_json = f"dlt: {{ period: '{dlt_data['period']}', date: '{dlt_data['date']}', front: [{','.join(str(x) for x in dlt_data['front'])}], back: [{','.join(str(x) for x in dlt_data['back'])}] }}"
         html = re.sub(r'dlt:\s*\{\s*period:\s*[^}]+\}', dlt_json, html)
@@ -254,7 +254,7 @@ def main():
 
         draw_front = draw.get("front", draw.get("red", []))
         draw_back = draw.get("back", draw.get("blue", []))
-        game_name = "澶т箰閫? if game == "dlt" else "鍙岃壊鐞?
+        game_name = "大乐透" if game == "dlt" else "双色球"
         period = draw.get("period", "?")
 
         for i, preset in enumerate(presets):
@@ -267,33 +267,33 @@ def main():
                 level_count = {}
                 for r in results:
                     level_count[r["name"]] = level_count.get(r["name"], 0) + 1
-                summary = "銆?.join(f"{k}脳{v}" for k,v in level_count.items())
+                summary = "、".join(f"{k}×{v}" for k,v in level_count.items())
                 best = min(results, key=lambda r: r["level"])
 
-                # 濂栭噾淇℃伅
+                # 奖金信息
                 fixed_amount = calc_prize_amount(results, game)
                 has_var = has_variable_prize(results, game)
                 prize_text = ""
                 if has_var:
-                    prize_text = "锛堝惈娴姩濂栭噾锛屽幓瀹樼綉鏌?
+                    prize_text = "（含浮动奖金，去官网查"
                     if fixed_amount > 0:
-                        prize_text += f"锛屽彟鍚浐瀹氬閲憑format_money(fixed_amount)}鍏?
-                    prize_text += "锛?
+                        prize_text += f"，另含固定奖金{format_money(fixed_amount)}元"
+                    prize_text += "）"
                 elif fixed_amount > 0:
-                    prize_text = f"锛堝浐瀹氬閲憑format_money(fixed_amount)}鍏冿級"
+                    prize_text = f"（固定奖金{format_money(fixed_amount)}元）"
 
-                push_msgs.append(f"馃帀 {game_name}绗瑊period}鏈?绗瑊i+1}缁勶細<b>{best['name']}</b>{prize_text}<br>涓姹囨€伙細{summary}<br>寮€濂栵細{draw_front} + {draw_back}<br>浣犵殑锛歿u_front} + {u_back}")
+                push_msgs.append(f"🎉 {game_name}第{period}期 第{i+1}组：<b>{best['name']}</b>{prize_text}<br>中奖汇总：{summary}<br>开奖：{draw_front} + {draw_back}<br>你的：{u_front} + {u_back}")
             else:
                 f_hits = len([n for n in u_front if n in draw_front])
                 b_hits = len([n for n in u_back if n in draw_back])
                 if f_hits > 0 or b_hits > 0:
-                    front_name = "鍓嶅尯" if game == "dlt" else "绾㈢悆"
-                    back_name = "鍚庡尯" if game == "dlt" else "钃濈悆"
-                    push_msgs.append(f"{game_name}绗瑊period}鏈?绗瑊i+1}缁勶細鏈腑濂栵紙{front_name}鍛戒腑{f_hits}锛寋back_name}鍛戒腑{b_hits}锛?)
+                    front_name = "前区" if game == "dlt" else "红球"
+                    back_name = "后区" if game == "dlt" else "蓝球"
+                    push_msgs.append(f"{game_name}第{period}期 第{i+1}组：未中奖（{front_name}命中{f_hits}，{back_name}命中{b_hits}）")
 
     # Push notification
     if push_msgs:
-        title = "馃帀 涓閫氱煡" if any("馃帀" in m for m in push_msgs) else "涓浜嗗悧 - 寮€濂栫粨鏋?
+        title = "🎉 中奖通知" if any("🎉" in m for m in push_msgs) else "中奖了吗 - 开奖结果"
         content = "<br><br>".join(push_msgs)
         push_wechat(title, content)
         print(f"Pushed: {title}")
@@ -301,7 +301,7 @@ def main():
             print(f"  {m}")
     else:
         if PRESETS.get("dlt") or PRESETS.get("ssq"):
-            push_wechat("涓浜嗗悧 - 浠婃棩寮€濂?, f"浠婃棩寮€濂栨暟鎹幏鍙栧畬鎴愶紝鏃犻璁惧彿鐮侀渶瑕佸姣斻€倇now}")
+            push_wechat("中奖了吗 - 今日开奖", f"今日开奖数据获取完成，无预设号码需要对比。{now}")
         else:
             print("No presets configured, skip push")
 

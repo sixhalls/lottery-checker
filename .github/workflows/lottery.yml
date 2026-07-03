@@ -6,9 +6,11 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore:
+      - '.github/**'
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 

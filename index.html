@@ -160,6 +160,18 @@ const PRIZE_INFO = {
 const GH_API = 'https://api.github.com/repos/sixhalls/lottery-checker/contents/presets.json';
 const PRESETS_URL = 'https://sixhalls.github.io/lottery-checker/presets.json';
 const GH_TOKEN_KEY = 'lottery_gh_token'; // 用户手动输入，不硬编码
+const DEVICE_ID_KEY = 'lottery_device_id';
+function getDeviceId(){return navigator.userAgent.length+'_'+screen.width+'x'+screen.height+'_'+navigator.language;}
+function checkDeviceChange(){
+  const cur=getDeviceId(),saved=localStorage.getItem(DEVICE_ID_KEY);
+  if(saved&&saved!==cur){
+    localStorage.removeItem(GH_TOKEN_KEY);
+    localStorage.setItem(DEVICE_ID_KEY,cur);
+    return true;
+  }
+  if(!saved)localStorage.setItem(DEVICE_ID_KEY,cur);
+  return false;
+}
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
 let latestData = {dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] },ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
 let cloudPresets = {dlt:[],ssq:[]};
@@ -330,8 +342,9 @@ function startTrack(idx){
     periods=parseInt(input);
     if(!periods||periods<1||periods>99){showToast('请输入1-99的期数','error');return;}
   }
-  const startPeriod=d.period;
-  const startNum=parseInt(startPeriod.replace(/\D/g,''));
+  const curNum=parseInt(d.period.replace(/\D/g,''));
+  const startNum=curNum+1;
+  const startPeriod=String(startNum);
   const endNum=startNum+periods-1;
   const endPeriod=String(endNum);
   p.track={enabled:true,totalPeriods:periods,startPeriod:startPeriod,endPeriod:endPeriod,history:[]};
@@ -376,10 +389,11 @@ function checkTrackPeriod(p,drawData){
 async function syncToCloud(){
   if(!cloudLoaded)return;
   const badge=document.getElementById('sync-badge');
+  const deviceChanged=checkDeviceChange();
   let token=localStorage.getItem(GH_TOKEN_KEY)||'';
-  if(!token){
-    token=prompt('首次同步需要输入GitHub Token（用于推送号码到云端）。\n\nToken只会存在本地浏览器，不会上传。\n\n请在 https://github.com/settings/tokens 创建（需repo权限）：');
-    if(!token){badge.className='sync-badge sync-off';badge.textContent='未同步';return;}
+  if(!token||deviceChanged){
+    token=prompt((deviceChanged?'检测到新设备或浏览器，需重新输入同步令牌。\n\n':'首次同步需要输入GitHub Token（用于推送号码到云端）。\n\n')+'Token只会存在本地浏览器，不会上传。\n\n请在 https://github.com/settings/tokens 创建（需repo权限）：');
+    if(!token){badge.className='sync-badge sync-off';badge.textContent=deviceChanged?'需重新输入':'未同步';return;}
     localStorage.setItem(GH_TOKEN_KEY,token);
   }
   badge.className='sync-badge sync-pending';badge.textContent='同步中...';
@@ -537,6 +551,7 @@ async function init(){
     });
   }
   buildPickers();renderLatest();renderPreset();renderResults();fetchLatest();
+  if(checkDeviceChange()&&cloudLoaded){showToast('检测到新设备，同步号码需重新输入令牌','error');}
   setInterval(()=>{if(latestData.dlt.period)localStorage.setItem('lottery_cache_dlt',JSON.stringify(latestData.dlt));if(latestData.ssq.period)localStorage.setItem('lottery_cache_ssq',JSON.stringify(latestData.ssq));},15000);
 }
 init();

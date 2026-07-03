@@ -178,11 +178,18 @@ def fetch_ssq():
         except: pass
 
     # Source 2: 17500.cn (works from overseas)
+    # Page structure: data-name="issue" data-v="2026075" ... data-date="2026-07-02" data-v="08 12 18 21 24 30 + 01"
     html = fetch_url("https://m.17500.cn/win/list/lotid/ssq.html")
     if html:
-        m = re.search(r'(\d{5,7})\s*(?:期)?[\s\S]*?(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*(\d{2})\s*[+\s]*(\d{2})', html)
+        period_m = re.search(r'data-name="issue"\s+data-v="(20\d{5})"', html)
+        balls_m = re.search(r'data-date="(\d{4}-\d{2}-\d{2})"\s+data-v="(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s*\+\s*(\d{2})"', html)
+        if period_m and balls_m:
+            return {"period": period_m.group(1), "date": balls_m.group(1),
+                    "red": [int(balls_m.group(i)) for i in range(2,8)], "blue": [int(balls_m.group(8))]}
+        # Fallback: match 20XXXXX period format (not random digits like meta tags)
+        m = re.search(r'(20\d{5})\s*期[\s\S]*?(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s*[+\s]*(\d{2})', html)
         if m:
-            return {"period": m.group(1).lstrip('0'), "date": "", "red": [int(m.group(i)) for i in range(2,8)], "blue": [int(m.group(8))]}
+            return {"period": m.group(1), "date": "", "red": [int(m.group(i)) for i in range(2,8)], "blue": [int(m.group(8))]}
 
     # Source 3: 78500
     html = fetch_url("https://kaijiang.78500.cn/ssq/")

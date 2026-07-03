@@ -1,0 +1,11 @@
+{
+  "dlt": [],
+  "ssq": [
+    {"front":[6,9,11,19,20,25],"back":[12],"track":null},
+    {"front":[9,12,17,19,21,23],"back":[6],"track":null},
+    {"front":[1,15,17,20,29,30],"back":[15],"track":null},
+    {"front":[18,19,21,28,30,32],"back":[7],"track":null},
+    {"front":[2,4,16,21,24,29],"back":[7],"track":null},
+    {"front":[4,9,15,17,25,33],"back":[14],"track":null}
+  ]
+}

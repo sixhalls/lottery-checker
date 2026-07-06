@@ -498,7 +498,8 @@ function toggleCollapse(id){
   else{el.style.maxHeight='0px';h3.classList.add('collapsed');}
 }
 async function fetchLatest(){
-  const sb=document.getElementById('status-bar');sb.textContent='获取数据中...';
+  const sb=document.getElementById('status-bar');sb.textContent='刷新数据中...';
+  // 先尝试直接CORS获取（PC浏览器可能成功）
   try{
     if(currentGame==='dlt')await fetchDLT();else await fetchSSQ();
     renderLatest();renderResults();
@@ -506,7 +507,27 @@ async function fetchLatest(){
     let trackUpdated=false;
     for(const p of presets){if(p.track&&p.track.enabled){const d=latestData[currentGame];if(d.period){checkTrackPeriod(p,d);trackUpdated=true;}}}
     if(trackUpdated){savePresetLocal();renderPreset();syncToCloud(true);}
-  }catch(e){sb.textContent='获取失败：'+e.message;showToast('数据获取失败，稍后重试','error');}
+    sb.textContent='数据已更新';
+    return;
+  }catch(e){}
+  // CORS失败时：触发GitHub Actions更新嵌入式数据，然后reload页面
+  sb.textContent='CORS受限，正在通过云端更新...';
+  try{
+    // 触发GitHub Actions工作流
+    const r=await fetch('https://api.github.com/repos/sixhalls/lottery-checker/actions/workflows/lottery.yml/dispatches',{method:'POST',headers:{'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({ref:'main'})});
+    if(r.ok||r.status===204){
+      showToast('已触发云端更新，约1分钟后刷新页面','info');
+      sb.textContent='云端更新已触发，等待60秒后刷新...';
+      setTimeout(()=>location.reload(true),60000);
+    }else{
+      // 无token时直接reload，用嵌入式数据
+      showToast('将刷新页面获取最新数据','info');
+      setTimeout(()=>location.reload(true),500);
+    }
+  }catch(e){
+    showToast('将刷新页面获取最新数据','info');
+    setTimeout(()=>location.reload(true),500);
+  }
 }
 async function fetchDLT(){
   const urls=['https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&provinceId=0&pageSize=3&is498=true','https://www.js-lottery.com/wfzq/dlt/data','https://m.55125.cn/kaijiang/dlt/'];

@@ -128,7 +128,7 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
     </div>
   </div>
   <div class="card">
-    <h3 class="collapsible" onclick="toggleCollapse('preset-body')"><span class="h3-left">我的号码 <span id="preset-total" style="font-size:11px;color:#567"></span></span><span class="sync-badge" id="sync-badge">未同步</span></h3>
+    <h3 class="collapsible" onclick="toggleCollapse('preset-body')"><span class="h3-left">我的号码 <span id="preset-total" style="font-size:11px;color:#567"></span></span><span class="h3-left"><button class="refresh-btn" onclick="event.stopPropagation();syncToCloud()">同步</button> <span class="sync-badge" id="sync-badge">未同步</span></span></h3>
     <div id="preset-body" class="collapse-body">
       <div id="preset-list"></div>
     </div>
@@ -161,7 +161,6 @@ const GH_API = 'https://api.github.com/repos/sixhalls/lottery-checker/contents/p
 const PRESETS_URL = 'https://sixhalls.github.io/lottery-checker/presets.json';
 const GH_TOKEN_KEY = 'lottery_gh_token'; // 用户手动输入，不硬编码
 const DEVICE_ID_KEY = 'lottery_device_id';
-const CORS_PROXY = 'https://corsproxy.io/?'; // 解决浏览器跨域限制
 function getDeviceId(){return navigator.userAgent.length+'_'+screen.width+'x'+screen.height+'_'+navigator.language;}
 function checkDeviceChange(){
   const cur=getDeviceId(),saved=localStorage.getItem(DEVICE_ID_KEY);
@@ -174,7 +173,7 @@ function checkDeviceChange(){
   return false;
 }
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
-let latestData = {dlt: { period: '26074', date: '2026-07-04', front: [1,4,10,23,25], back: [1,12] },ssq: { period: '2026076', date: '2026-07-05', red: [1,3,19,20,24,25], blue: [7] }};
+let latestData = {dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] },ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
 let cloudPresets = {dlt:[],ssq:[]};
 let cloudLoaded = false;
 
@@ -350,12 +349,12 @@ function startTrack(idx){
   const endPeriod=String(endNum);
   p.track={enabled:true,totalPeriods:periods,startPeriod:startPeriod,endPeriod:endPeriod,history:[]};
   checkTrackPeriod(p,d);
-  savePresetLocal();renderPreset();syncToCloud();
+  savePresetLocal();renderPreset();
   showToast('追号已开启：'+startPeriod+' → '+endPeriod+'，共'+periods+'期','success');
 }
 function stopTrack(idx){
   const presets=getPreset();
-  if(presets[idx]){presets[idx].track=null;savePresetLocal();renderPreset();syncToCloud();showToast('追号已停止','info');}
+  if(presets[idx]){presets[idx].track=null;savePresetLocal();renderPreset();showToast('追号已停止','info');}
 }
 function checkTrackPeriod(p,drawData){
   if(!p.track||!p.track.enabled)return;
@@ -402,22 +401,34 @@ async function syncToCloud(silent){
   try{
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(cloudPresets,null,2))));
     const apiHeaders={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'};
-    // 通过CORS代理访问GitHub API（浏览器直连会被CORS拦截）
+    // 多代理轮试（CORS代理转发GitHub API）
+    const proxies=[
+      u=>'https://corsproxy.io/?'+encodeURIComponent(u),
+      u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+      u=>'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u)
+    ];
+    // 获取当前SHA（防409冲突）
     let sha='';
-    try{const resp=await fetch(CORS_PROXY+encodeURIComponent(GH_API),{headers:apiHeaders,signal:AbortSignal.timeout(10000)});if(resp.ok){const j=await resp.json();sha=j.sha;}}catch(e){}
+    for(const proxy of proxies){
+      try{const resp=await fetch(proxy(GH_API),{headers:apiHeaders,signal:AbortSignal.timeout(8000)});if(resp.ok){const j=await resp.json();if(j.sha){sha=j.sha;break;}}}catch(e){}
+    }
     const body={message:'auto: sync presets',content:content};
     if(sha)body.sha=sha;
-    const resp=await fetch(CORS_PROXY+encodeURIComponent(GH_API),{method:'PUT',headers:{...apiHeaders,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
-    if(resp.ok){badge.className='sync-badge sync-ok';badge.textContent='已同步';showToast('号码已同步到云端','success');}
-    else{
-      const status=resp.status;
-      // corsproxy 返回非200时，尝试读取真实状态码
-      let realStatus=status;
-      try{const txt=await resp.text();const m=txt.match(/"status":\s*(\d+)/);if(m)realStatus=parseInt(m[1]);}catch(e){}
-      if(realStatus===401||realStatus===403){localStorage.removeItem(GH_TOKEN_KEY);badge.className='sync-badge sync-off';badge.textContent='Token无效';showToast('Token无效或权限不足，请重新输入','error');}
-      else{badge.className='sync-badge sync-off';badge.textContent='同步失败';showToast('同步失败：'+realStatus,'error');}
+    // 写入presets.json（轮试代理）
+    let writeOk=false;
+    for(const proxy of proxies){
+      try{
+        const resp=await fetch(proxy(GH_API),{method:'PUT',headers:{...apiHeaders,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(12000)});
+        if(resp.ok){writeOk=true;break;}
+        // 检测真实错误码
+        let txt='';try{txt=await resp.text();}catch(e){}
+        if(txt.includes('"message"')&&(txt.includes('409')||txt.includes('sha'))){continue;} // SHA冲突，试下一个
+        if(txt.includes('401')||txt.includes('403')){localStorage.removeItem(GH_TOKEN_KEY);badge.className='sync-badge sync-off';badge.textContent='Token无效';showToast('Token无效或权限不足，请重新输入','error');return;}
+      }catch(e){continue;}
     }
-  }catch(e){badge.className='sync-badge sync-off';badge.textContent='同步失败';showToast('同步失败：'+e.message,'error');}
+    if(writeOk){badge.className='sync-badge sync-ok';badge.textContent='已同步';if(!silent)showToast('号码已同步到云端','success');}
+    else{badge.className='sync-badge sync-off';badge.textContent='同步失败';if(!silent)showToast('同步失败：代理均不可用，请稍后重试','error');}
+  }catch(e){badge.className='sync-badge sync-off';badge.textContent='同步失败';if(!silent)showToast('同步失败：'+e.message,'error');}
 }
 async function loadCloudPresets(){
   const badge=document.getElementById('sync-badge');
@@ -436,7 +447,7 @@ async function loadCloudPresets(){
   }catch(e){}
   // 直连失败时通过CORS代理
   try{
-    const resp=await fetch(CORS_PROXY+encodeURIComponent(PRESETS_URL),{signal:AbortSignal.timeout(10000)});
+    const resp=await fetch('https://corsproxy.io/?'+encodeURIComponent(PRESETS_URL),{signal:AbortSignal.timeout(10000)});
     if(resp.ok){
       const data=await resp.json();
       if(data.dlt||data.ssq){
@@ -503,11 +514,11 @@ function addPreset(){
   if(selectedBack.size<cfg.backMin){showToast(cfg.backName+'至少选'+cfg.backMin+'个','error');return;}
   const presets=getPreset();
   presets.push({front:[...selectedFront].sort((a,b)=>a-b),back:[...selectedBack].sort((a,b)=>a-b),track:null});
-  savePreset(presets);clearPicker();renderPreset();renderResults();syncToCloud();
+  savePreset(presets);clearPicker();renderPreset();renderResults();syncToCloud(true);
   showToast('号码已添加','success');
 }
 function delPreset(i){
-  const p=getPreset();p.splice(i,1);savePreset(p);renderPreset();renderResults();syncToCloud();
+  const p=getPreset();p.splice(i,1);savePreset(p);renderPreset();renderResults();syncToCloud(true);
 }
 function manualCompare(){
   const period=document.getElementById('manual-period').value.trim(),numStr=document.getElementById('manual-numbers').value.trim();
@@ -589,7 +600,7 @@ async function fetchCORS(url){
 function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+type+' toast-show';setTimeout(()=>el.className='toast',2200);}
 const DEFAULT_PRESETS={dlt:[],ssq:[{front:[6,9,11,19,20,25],back:[12],track:null},{front:[9,12,17,19,21,23],back:[6],track:null},{front:[1,15,17,20,29,30],back:[15],track:null},{front:[18,19,21,28,30,32],back:[7],track:null},{front:[2,4,16,21,24,29],back:[7],track:null},{front:[4,9,15,17,25,33],back:[14],track:null}]};
 async function init(){
-  const EMBEDDED={dlt: { period: '26074', date: '2026-07-04', front: [1,4,10,23,25], back: [1,12] }, ssq: { period: '2026076', date: '2026-07-05', red: [1,3,19,20,24,25], blue: [7] }};
+  const EMBEDDED={dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] }, ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
   if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}

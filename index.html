@@ -161,6 +161,7 @@ const GH_API = 'https://api.github.com/repos/sixhalls/lottery-checker/contents/p
 const PRESETS_URL = 'https://sixhalls.github.io/lottery-checker/presets.json';
 const GH_TOKEN_KEY = 'lottery_gh_token'; // 用户手动输入，不硬编码
 const DEVICE_ID_KEY = 'lottery_device_id';
+const CORS_PROXY = 'https://corsproxy.io/?'; // 解决浏览器跨域限制
 function getDeviceId(){return navigator.userAgent.length+'_'+screen.width+'x'+screen.height+'_'+navigator.language;}
 function checkDeviceChange(){
   const cur=getDeviceId(),saved=localStorage.getItem(DEVICE_ID_KEY);
@@ -173,7 +174,7 @@ function checkDeviceChange(){
   return false;
 }
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
-let latestData = {dlt: { period: '26074', date: '2026-07-04', front: [1,4,10,23,25], back: [1,12] },ssq: { period: '2026076', date: '2026-07-05', red: [1,3,19,20,24,25], blue: [7] }};
+let latestData = {dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] },ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
 let cloudPresets = {dlt:[],ssq:[]};
 let cloudLoaded = false;
 
@@ -400,20 +401,42 @@ async function syncToCloud(silent){
   badge.className='sync-badge sync-pending';badge.textContent='同步中...';
   try{
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(cloudPresets,null,2))));
+    const apiHeaders={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'};
+    // 通过CORS代理访问GitHub API（浏览器直连会被CORS拦截）
     let sha='';
-    try{const resp=await fetch(GH_API,{headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'}});if(resp.ok){const j=await resp.json();sha=j.sha;}}catch(e){}
+    try{const resp=await fetch(CORS_PROXY+encodeURIComponent(GH_API),{headers:apiHeaders,signal:AbortSignal.timeout(10000)});if(resp.ok){const j=await resp.json();sha=j.sha;}}catch(e){}
     const body={message:'auto: sync presets',content:content};
     if(sha)body.sha=sha;
-    const resp=await fetch(GH_API,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    const resp=await fetch(CORS_PROXY+encodeURIComponent(GH_API),{method:'PUT',headers:{...apiHeaders,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
     if(resp.ok){badge.className='sync-badge sync-ok';badge.textContent='已同步';showToast('号码已同步到云端','success');}
-    else if(resp.status===401){localStorage.removeItem(GH_TOKEN_KEY);badge.className='sync-badge sync-off';badge.textContent='Token无效';showToast('Token无效，请重新输入','error');}
-    else{badge.className='sync-badge sync-off';badge.textContent='同步失败';showToast('同步失败：'+resp.status,'error');}
-  }catch(e){badge.className='sync-badge sync-off';badge.textContent='同步失败';showToast('同步失败','error');}
+    else{
+      const status=resp.status;
+      // corsproxy 返回非200时，尝试读取真实状态码
+      let realStatus=status;
+      try{const txt=await resp.text();const m=txt.match(/"status":\s*(\d+)/);if(m)realStatus=parseInt(m[1]);}catch(e){}
+      if(realStatus===401||realStatus===403){localStorage.removeItem(GH_TOKEN_KEY);badge.className='sync-badge sync-off';badge.textContent='Token无效';showToast('Token无效或权限不足，请重新输入','error');}
+      else{badge.className='sync-badge sync-off';badge.textContent='同步失败';showToast('同步失败：'+realStatus,'error');}
+    }
+  }catch(e){badge.className='sync-badge sync-off';badge.textContent='同步失败';showToast('同步失败：'+e.message,'error');}
 }
 async function loadCloudPresets(){
   const badge=document.getElementById('sync-badge');
+  // 先尝试直连（GitHub Pages 静态文件一般允许跨域）
   try{
     const resp=await fetch(PRESETS_URL+'?t='+Date.now());
+    if(resp.ok){
+      const data=await resp.json();
+      if(data.dlt||data.ssq){
+        cloudPresets={dlt:data.dlt||[],ssq:data.ssq||[]};
+        cloudLoaded=true;
+        badge.className='sync-badge sync-ok';badge.textContent='已同步';
+        return true;
+      }
+    }
+  }catch(e){}
+  // 直连失败时通过CORS代理
+  try{
+    const resp=await fetch(CORS_PROXY+encodeURIComponent(PRESETS_URL),{signal:AbortSignal.timeout(10000)});
     if(resp.ok){
       const data=await resp.json();
       if(data.dlt||data.ssq){
@@ -566,7 +589,7 @@ async function fetchCORS(url){
 function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+type+' toast-show';setTimeout(()=>el.className='toast',2200);}
 const DEFAULT_PRESETS={dlt:[],ssq:[{front:[6,9,11,19,20,25],back:[12],track:null},{front:[9,12,17,19,21,23],back:[6],track:null},{front:[1,15,17,20,29,30],back:[15],track:null},{front:[18,19,21,28,30,32],back:[7],track:null},{front:[2,4,16,21,24,29],back:[7],track:null},{front:[4,9,15,17,25,33],back:[14],track:null}]};
 async function init(){
-  const EMBEDDED={dlt: { period: '26074', date: '2026-07-04', front: [1,4,10,23,25], back: [1,12] }, ssq: { period: '2026076', date: '2026-07-05', red: [1,3,19,20,24,25], blue: [7] }};
+  const EMBEDDED={dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] }, ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
   if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}

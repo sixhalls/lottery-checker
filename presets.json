@@ -149,7 +149,20 @@
       "back": [
         7
       ],
-      "track": null
+      "track": {
+        "enabled": true,
+        "totalPeriods": 1,
+        "startPeriod": "2026077",
+        "endPeriod": "2026077",
+        "history": [
+          {
+            "period": "2026076",
+            "prize": 5,
+            "summary": "六等奖×1",
+            "hasVariable": false
+          }
+        ]
+      }
     },
     {
       "front": [

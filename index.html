@@ -99,6 +99,10 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
 .sync-ok{background:rgba(39,174,96,.15);color:#2ecc71}
 .sync-off{background:rgba(255,255,255,.06);color:#567}
 .sync-pending{background:rgba(243,156,18,.15);color:#f39c12}
+.mode-tabs{display:flex;gap:4px;margin-bottom:10px}
+.mode-tab{flex:1;padding:6px 0;text-align:center;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid #2a3a5c;background:rgba(255,255,255,.04);color:#6b7fa3;transition:.15s}
+.mode-tab.active{background:rgba(243,156,18,.15);color:#f39c12;border-color:#f39c12}
+.dan-label{font-size:11px;color:#f39c12;font-weight:600;margin-top:6px;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -116,10 +120,30 @@ body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:linear-gr
   <div class="card">
     <h3 class="collapsible" onclick="toggleCollapse('picker-body')"><span class="h3-left">添加号码</span></h3>
     <div id="picker-body" class="collapse-body">
-      <div class="ball-picker-label"><span id="front-label">前区（选5-18个，超5为复式）</span><span id="front-count">已选 0/35</span></div>
-      <div class="ball-picker" id="front-picker"></div>
-      <div class="ball-picker-label"><span id="back-label">后区（选2-12个，超2为复式）</span><span id="back-count">已选 0/12</span></div>
-      <div class="ball-picker" id="back-picker"></div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="mode-normal" onclick="setPickMode('normal')">普通/复式</button>
+        <button class="mode-tab" id="mode-dantuo" onclick="setPickMode('dantuo')">胆拖</button>
+      </div>
+      <!-- 普通模式 -->
+      <div id="picker-normal">
+        <div class="ball-picker-label"><span id="front-label">前区（选5-18个，超5为复式）</span><span id="front-count">已选 0/35</span></div>
+        <div class="ball-picker" id="front-picker"></div>
+        <div class="ball-picker-label"><span id="back-label">后区（选2-12个，超2为复式）</span><span id="back-count">已选 0/12</span></div>
+        <div class="ball-picker" id="back-picker"></div>
+      </div>
+      <!-- 胆拖模式 -->
+      <div id="picker-dantuo" style="display:none">
+        <div class="dan-label" id="dan-front-label">前区胆码（1-4个）</div>
+        <div class="ball-picker-label"><span>胆码</span><span id="dan-front-count">已选 0/35</span></div>
+        <div class="ball-picker" id="dan-front-picker"></div>
+        <div class="ball-picker-label"><span>拖码</span><span id="tuo-front-count">已选 0/35</span></div>
+        <div class="ball-picker" id="tuo-front-picker"></div>
+        <div class="dan-label" id="dan-back-label">后区胆码（0-1个）</div>
+        <div class="ball-picker-label"><span>胆码</span><span id="dan-back-count">已选 0/12</span></div>
+        <div class="ball-picker" id="dan-back-picker"></div>
+        <div class="ball-picker-label"><span>拖码</span><span id="tuo-back-count">已选 0/12</span></div>
+        <div class="ball-picker" id="tuo-back-picker"></div>
+      </div>
       <div class="note-count" id="note-count"></div>
       <div class="action-row">
         <button class="btn btn-green" onclick="addPreset()">确认添加</button>
@@ -173,7 +197,9 @@ function checkDeviceChange(){
   return false;
 }
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
-let latestData = {dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] },ssq: { period: '2026077', date: '2026-07-07', red: [1,4,5,14,18,25], blue: [4] }};
+let pickMode='normal'; // 'normal' or 'dantuo'
+let danFront=new Set(), tuoFront=new Set(), danBack=new Set(), tuoBack=new Set();
+let latestData = {dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] },ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
 let cloudPresets = {dlt:[],ssq:[]};
 let cloudLoaded = false;
 
@@ -201,8 +227,19 @@ function prizeSSQ(r,b){
   if((r===2&&b===1)||(r===1&&b===1)||(r===0&&b===1))return{level:6,...PRIZE_INFO.ssq[6]};
   return{level:0,name:'未中奖'};
 }
-function compareAll(uF,uB,dF,dB,game){
-  const cfg=CONFIG[game],fC=combinations(uF,cfg.frontNeed),bC=combinations(uB,cfg.backNeed);
+function compareAll(uF,uB,dF,dB,game,pMode,danF,danB){
+  const cfg=CONFIG[game];
+  let fC,bC;
+  if(pMode==='dantuo'){
+    // 胆码必选，从拖码中选剩余个数
+    const dF=danF||[],dB=danB||[];
+    const needF=cfg.frontNeed-dF.length, needB=cfg.backNeed-dB.length;
+    fC=combinations(uF,needF).map(c=>[...dF,...c].sort((a,b)=>a-b));
+    bC=combinations(uB,needB).map(c=>[...dB,...c].sort((a,b)=>a-b));
+  }else{
+    fC=combinations(uF,cfg.frontNeed);
+    bC=combinations(uB,cfg.backNeed);
+  }
   let results=[],bestLevel=99;
   for(const fc of fC)for(const bc of bC){
     const fh=fc.filter(n=>dF.includes(n)).length,bh=bc.filter(n=>dB.includes(n)).length;
@@ -240,6 +277,66 @@ function switchTab(game){
   selectedFront.clear();selectedBack.clear();
   buildPickers();renderLatest();renderPreset();renderResults();
 }
+function setPickMode(mode){
+  pickMode=mode;
+  document.getElementById('mode-normal').className='mode-tab'+(mode==='normal'?' active':'');
+  document.getElementById('mode-dantuo').className='mode-tab'+(mode==='dantuo'?' active':'');
+  document.getElementById('picker-normal').style.display=mode==='normal'?'':'none';
+  document.getElementById('picker-dantuo').style.display=mode==='dantuo'?'':'none';
+  if(mode==='dantuo'){buildDantuoPickers();}
+  else{buildPickers();}
+}
+function buildDantuoPickers(){
+  const cfg=CONFIG[currentGame];
+  const maxDanF=cfg.frontNeed-1, maxDanB=cfg.backNeed-1;
+  document.getElementById('dan-front-label').textContent=cfg.frontName+'胆码（1-'+maxDanF+'个）';
+  document.getElementById('dan-back-label').textContent=cfg.backName+'胆码（0-'+(maxDanB>0?maxDanB:0)+'个）';
+  // 胆码前区
+  let h='';
+  for(let i=1;i<=cfg.frontMax;i++){const isDan=danFront.has(i),isTuo=tuoFront.has(i);h+='<div class="pick-ball pick-ball-red'+(isDan?' selected':'')+(isTuo?' style="opacity:.3"':'')+'" onclick="toggleDantuo(\'danFront\','+i+')">'+String(i).padStart(2,'0')+'</div>';}
+  document.getElementById('dan-front-picker').innerHTML=h;
+  // 拖码前区
+  h='';
+  for(let i=1;i<=cfg.frontMax;i++){const isTuo=tuoFront.has(i),isDan=danFront.has(i);h+='<div class="pick-ball pick-ball-red'+(isTuo?' selected':'')+(isDan?' style="opacity:.3"':'')+'" onclick="toggleDantuo(\'tuoFront\','+i+')">'+String(i).padStart(2,'0')+'</div>';}
+  document.getElementById('tuo-front-picker').innerHTML=h;
+  // 胆码后区
+  h='';
+  for(let i=1;i<=cfg.backMax;i++){const isDan=danBack.has(i),isTuo=tuoBack.has(i);h+='<div class="pick-ball pick-ball-blue'+(isDan?' selected':'')+(isTuo?' style="opacity:.3"':'')+'" onclick="toggleDantuo(\'danBack\','+i+')">'+String(i).padStart(2,'0')+'</div>';}
+  document.getElementById('dan-back-picker').innerHTML=h;
+  // 拖码后区
+  h='';
+  for(let i=1;i<=cfg.backMax;i++){const isTuo=tuoBack.has(i),isDan=danBack.has(i);h+='<div class="pick-ball pick-ball-blue'+(isTuo?' selected':'')+(isDan?' style="opacity:.3"':'')+'" onclick="toggleDantuo(\'tuoBack\','+i+')">'+String(i).padStart(2,'0')+'</div>';}
+  document.getElementById('tuo-back-picker').innerHTML=h;
+  updateDantuoInfo();
+}
+function toggleDantuo(area,num){
+  const sets={danFront,tuoFront,danBack,tuoBack};
+  const s=sets[area];
+  if(s.has(num))s.delete(num);
+  else{
+    // 互斥：胆码和拖码不能同时选同一个号
+    const peer=area==='danFront'?'tuoFront':area==='tuoFront'?'danFront':area==='danBack'?'tuoBack':'danBack';
+    if(sets[peer].has(num))return; // 对方已选，忽略
+    s.add(num);
+  }
+  buildDantuoPickers();
+}
+function updateDantuoInfo(){
+  const cfg=CONFIG[currentGame];
+  document.getElementById('dan-front-count').textContent='已选 '+danFront.size+'/'+cfg.frontMax;
+  document.getElementById('tuo-front-count').textContent='已选 '+tuoFront.size+'/'+cfg.frontMax;
+  document.getElementById('dan-back-count').textContent='已选 '+danBack.size+'/'+cfg.backMax;
+  document.getElementById('tuo-back-count').textContent='已选 '+tuoBack.size+'/'+cfg.backMax;
+  const maxDanF=cfg.frontNeed-1, maxDanB=cfg.backNeed-1;
+  const needTuoF=cfg.frontNeed-danFront.size, needTuoB=cfg.backNeed-danBack.size;
+  if(danFront.size<1){document.getElementById('note-count').innerHTML=cfg.frontName+'胆码至少选1个';return;}
+  if(danFront.size>maxDanF){document.getElementById('note-count').innerHTML=cfg.frontName+'胆码最多'+maxDanF+'个';return;}
+  if(danBack.size>maxDanB&&maxDanB>=0){document.getElementById('note-count').innerHTML=cfg.backName+'胆码最多'+maxDanB+'个';return;}
+  if(tuoFront.size<needTuoF){document.getElementById('note-count').innerHTML=cfg.frontName+'拖码至少选'+needTuoF+'个';return;}
+  if(tuoBack.size<needTuoB){document.getElementById('note-count').innerHTML=cfg.backName+'拖码至少选'+needTuoB+'个';return;}
+  const notes=C(tuoFront.size,needTuoF)*C(tuoBack.size,needTuoB);
+  document.getElementById('note-count').innerHTML='胆拖组合 <b>'+notes+'</b> 注';
+}
 function buildPickers(){
   const cfg=CONFIG[currentGame];
   document.getElementById('front-label').textContent=cfg.frontName+'（选'+cfg.frontMin+'个起，超'+cfg.frontMin+'为复式）';
@@ -253,7 +350,7 @@ function buildPickers(){
   updatePickerInfo();
 }
 function toggleBall(area,num){const s=area==='front'?selectedFront:selectedBack;if(s.has(num))s.delete(num);else s.add(num);buildPickers();}
-function clearPicker(){selectedFront.clear();selectedBack.clear();buildPickers();}
+function clearPicker(){selectedFront.clear();selectedBack.clear();danFront.clear();tuoFront.clear();danBack.clear();tuoBack.clear();if(pickMode==='dantuo')buildDantuoPickers();else buildPickers();}
 function updatePickerInfo(){
   const cfg=CONFIG[currentGame];
   document.getElementById('front-count').textContent='已选 '+selectedFront.size+'/'+cfg.frontMax;
@@ -289,8 +386,18 @@ function renderPreset(){
   if(presets.length===0){el.innerHTML='<div class="no-data" style="padding:8px 0">还未添加号码</div>';tEl.textContent='';return;}
   let total=0;
   el.innerHTML=presets.map((p,i)=>{
-    const notes=C(p.front.length,cfg.frontNeed)*C(p.back.length,cfg.backNeed);total+=notes;
-    const isDup=p.front.length>cfg.frontMin||p.back.length>cfg.backMin;
+    const isDT=p.mode==='dantuo';
+    let notes,modeLabel;
+    if(isDT){
+      const dF=p.danFront||[],dF2=p.front||[],dB=p.danBack||[],dB2=p.back||[];
+      notes=C(dF2.length,cfg.frontNeed-dF.length)*C(dB2.length,cfg.backNeed-dB.length);
+      modeLabel='<span class="dup" style="color:#f39c12">胆拖</span>';
+    }else{
+      notes=C(p.front.length,cfg.frontNeed)*C(p.back.length,cfg.backNeed);
+      const isDup=p.front.length>cfg.frontMin||p.back.length>cfg.backMin;
+      modeLabel=isDup?'<span class="dup">复式</span>':'';
+    }
+    total+=notes;
     const track=p.track;
     let trackH='';
     if(track&&track.enabled){
@@ -325,7 +432,14 @@ function renderPreset(){
         '<button class="track-btn" onclick="startTrack('+i+')">'+(isDLT?'设置多期追号':'开始追号')+'</button>'+
         '</div>';
     }
-    return'<div class="preset-item"><div class="label">第'+(i+1)+'组'+(isDup?'<span class="dup">复式 '+notes+'注</span>':'')+'</div><div class="preset-balls">'+ballHTML(p.front,'red')+'<span class="mball-sep">+</span>'+ballHTML(p.back,'blue')+'</div><button class="del-btn" onclick="delPreset('+i+')">×</button>'+trackH+'</div>';
+    let ballsH='';
+    if(isDT){
+      const dF=p.danFront||[],dF2=p.front||[],dB=p.danBack||[],dB2=p.back||[];
+      ballsH='<span style="font-size:10px;color:#f39c12;margin-right:2px">胆</span>'+ballHTML(dF,'red')+'<span style="font-size:10px;color:#6b7fa3;margin:0 2px">拖</span>'+ballHTML(dF2,'red')+'<span class="mball-sep">+</span><span style="font-size:10px;color:#f39c12;margin-right:2px">胆</span>'+ballHTML(dB,'blue')+'<span style="font-size:10px;color:#6b7fa3;margin:0 2px">拖</span>'+ballHTML(dB2,'blue');
+    }else{
+      ballsH=ballHTML(p.front,'red')+'<span class="mball-sep">+</span>'+ballHTML(p.back,'blue');
+    }
+    return'<div class="preset-item"><div class="label">第'+(i+1)+'组 '+modeLabel+(notes>1?' <span class="dup">'+notes+'注</span>':'')+'</div><div class="preset-balls">'+ballsH+'</div><button class="del-btn" onclick="delPreset('+i+')">×</button>'+trackH+'</div>';
   }).join('');
   tEl.textContent='('+presets.length+'组 / '+total+'注)';
 }
@@ -363,7 +477,7 @@ function checkTrackPeriod(p,drawData){
   if(p.track.history.find(h=>h.period===period))return;
   const dF=game==='dlt'?drawData.front:drawData.red;
   const dB=game==='dlt'?drawData.back:drawData.blue;
-  const{results}=compareAll(p.front,p.back,dF,dB,game);
+  const{results}=compareAll(p.front,p.back,dF,dB,game,p.mode,p.danFront,p.danBack);
   let totalPrize=0,summaryParts=[],hasVariable=false;
   if(results.length>0){
     if(results.some(r=>{const info=PRIZE_INFO[game][r.level];return info&&info.variable;}))hasVariable=true;
@@ -469,7 +583,7 @@ function renderResults(drawNums,drawPeriod){
   else if(currentGame==='dlt'){const d=latestData.dlt;if(!d.period){el.innerHTML='<div class="no-data">暂无开奖数据，点击上方刷新获取</div>';return;}dF=d.front;dB=d.back;period=d.period;}
   else{const d=latestData.ssq;if(!d.period){el.innerHTML='<div class="no-data">暂无开奖数据，点击上方刷新获取</div>';return;}dF=d.red;dB=d.blue;period=d.period;}
   el.innerHTML=presets.map((p,i)=>{
-    const{results,bestLevel}=compareAll(p.front,p.back,dF,dB,currentGame);
+    const{results,bestLevel}=compareAll(p.front,p.back,dF,dB,currentGame,p.mode,p.danFront,p.danBack);
     const isWin=bestLevel>0;
     let cardClass,prizeClass;
     if(!isWin){cardClass='result-card result-lose';prizeClass='result-prize lose';}
@@ -504,18 +618,33 @@ function renderResults(drawNums,drawPeriod){
     }
     let summaryH='';
     if(results.length>0){const lc={};results.forEach(r=>{lc[r.name]=(lc[r.name]||0)+1;});summaryH=Object.entries(lc).map(([n,c])=>n+'×'+c).join('，');}
-    const notes=C(p.front.length,cfg.frontNeed)*C(p.back.length,cfg.backNeed);
-    return'<div class="'+cardClass+'"><div class="result-label">第'+(i+1)+'组 — 第 '+period+' 期'+(notes>1?' ('+notes+'注复式)':'')+'</div><div class="'+prizeClass+'">'+pn+'</div>'+amountH+'<div class="result-detail">'+(summaryH?'中奖汇总：'+summaryH:cfg.frontName+'命中0 + '+cfg.backName+'命中0')+'</div>'+comboH+'</div>';
+    let notes,modeTag;
+    if(p.mode==='dantuo'){const dF=p.danFront||[],dB=p.danBack||[];notes=C(p.front.length,cfg.frontNeed-dF.length)*C(p.back.length,cfg.backNeed-dB.length);modeTag='胆拖';}else{notes=C(p.front.length,cfg.frontNeed)*C(p.back.length,cfg.backNeed);modeTag=notes>1?'复式':'';}
+    return'<div class="'+cardClass+'"><div class="result-label">第'+(i+1)+'组 — 第 '+period+' 期'+(notes>1?' ('+notes+'注'+modeTag+')':'')+'</div><div class="'+prizeClass+'">'+pn+'</div>'+amountH+'<div class="result-detail">'+(summaryH?'中奖汇总：'+summaryH:cfg.frontName+'命中0 + '+cfg.backName+'命中0')+'</div>'+comboH+'</div>';
   }).join('');
 }
 function addPreset(){
   const cfg=CONFIG[currentGame];
-  if(selectedFront.size<cfg.frontMin){showToast(cfg.frontName+'至少选'+cfg.frontMin+'个','error');return;}
-  if(selectedBack.size<cfg.backMin){showToast(cfg.backName+'至少选'+cfg.backMin+'个','error');return;}
-  const presets=getPreset();
-  presets.push({front:[...selectedFront].sort((a,b)=>a-b),back:[...selectedBack].sort((a,b)=>a-b),track:null});
-  savePreset(presets);clearPicker();renderPreset();renderResults();syncToCloud(true);
-  showToast('号码已添加','success');
+  if(pickMode==='dantuo'){
+    const maxDanF=cfg.frontNeed-1, maxDanB=cfg.backNeed-1;
+    const needTuoF=cfg.frontNeed-danFront.size, needTuoB=cfg.backNeed-danBack.size;
+    if(danFront.size<1){showToast(cfg.frontName+'胆码至少选1个','error');return;}
+    if(danFront.size>maxDanF){showToast(cfg.frontName+'胆码最多'+maxDanF+'个','error');return;}
+    if(danBack.size>maxDanB&&maxDanB>=0){showToast(cfg.backName+'胆码最多'+maxDanB+'个','error');return;}
+    if(tuoFront.size<needTuoF){showToast(cfg.frontName+'拖码至少选'+needTuoF+'个','error');return;}
+    if(tuoBack.size<needTuoB){showToast(cfg.backName+'拖码至少选'+needTuoB+'个','error');return;}
+    const presets=getPreset();
+    presets.push({mode:'dantuo',danFront:[...danFront].sort((a,b)=>a-b),front:[...tuoFront].sort((a,b)=>a-b),danBack:[...danBack].sort((a,b)=>a-b),back:[...tuoBack].sort((a,b)=>a-b),track:null});
+    savePreset(presets);clearPicker();renderPreset();renderResults();syncToCloud(true);
+    showToast('胆拖号码已添加','success');
+  }else{
+    if(selectedFront.size<cfg.frontMin){showToast(cfg.frontName+'至少选'+cfg.frontMin+'个','error');return;}
+    if(selectedBack.size<cfg.backMin){showToast(cfg.backName+'至少选'+cfg.backMin+'个','error');return;}
+    const presets=getPreset();
+    presets.push({mode:'normal',front:[...selectedFront].sort((a,b)=>a-b),back:[...selectedBack].sort((a,b)=>a-b),track:null});
+    savePreset(presets);clearPicker();renderPreset();renderResults();syncToCloud(true);
+    showToast('号码已添加','success');
+  }
 }
 function delPreset(i){
   const p=getPreset();p.splice(i,1);savePreset(p);renderPreset();renderResults();syncToCloud(true);
@@ -600,7 +729,7 @@ async function fetchCORS(url){
 function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+type+' toast-show';setTimeout(()=>el.className='toast',2200);}
 const DEFAULT_PRESETS={dlt:[],ssq:[{front:[6,9,11,19,20,25],back:[12],track:null},{front:[9,12,17,19,21,23],back:[6],track:null},{front:[1,15,17,20,29,30],back:[15],track:null},{front:[18,19,21,28,30,32],back:[7],track:null},{front:[2,4,16,21,24,29],back:[7],track:null},{front:[4,9,15,17,25,33],back:[14],track:null}]};
 async function init(){
-  const EMBEDDED={dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] }, ssq: { period: '2026077', date: '2026-07-07', red: [1,4,5,14,18,25], blue: [4] }};
+  const EMBEDDED={dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] }, ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
   if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}

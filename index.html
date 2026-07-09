@@ -199,7 +199,7 @@ function checkDeviceChange(){
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
 let pickMode='normal'; // 'normal' or 'dantuo'
 let danFront=new Set(), tuoFront=new Set(), danBack=new Set(), tuoBack=new Set();
-let latestData = {dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] },ssq: { period: '2026077', date: '2026-07-07', red: [1,4,5,14,18,25], blue: [4] }};
+let latestData = {dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] },ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
 let cloudPresets = {dlt:[],ssq:[]};
 let cloudLoaded = false;
 
@@ -257,18 +257,17 @@ function parseDrawNumbers(str){
   return null;
 }
 function getPreset(){
-  if(cloudLoaded&&cloudPresets[currentGame])return cloudPresets[currentGame];
   try{return JSON.parse(localStorage.getItem('lottery_v2_'+currentGame)||'[]');}catch{return[];}
 }
 function savePreset(d){
-  if(cloudLoaded){cloudPresets[currentGame]=d;}
-  else{localStorage.setItem('lottery_v2_'+currentGame,JSON.stringify(d));}
+  localStorage.setItem('lottery_v2_'+currentGame,JSON.stringify(d));
+  if(cloudLoaded){cloudPresets[currentGame]=d.map(p=>({...p,track:null}));} // 云端不存track
 }
 function savePresetLocal(){
-  if(cloudLoaded){cloudPresets[currentGame]=getPreset();}
-  else{localStorage.setItem('lottery_v2_'+currentGame,JSON.stringify(getPreset()));}
+  localStorage.setItem('lottery_v2_'+currentGame,JSON.stringify(getPreset()));
 }
 function formatMoney(n){if(n>=10000)return(n/10000).toFixed(1)+'万';return n.toString();}
+function arraysEqual(a,b){if(!a||!b||a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true;}
 function calcPeriodPrize(results,game){let total=0;for(const r of results){const info=PRIZE_INFO[game][r.level];if(info&&info.amount)total+=info.amount;}return total;}
 function switchTab(game){
   currentGame=game;
@@ -546,32 +545,51 @@ async function syncToCloud(silent){
 }
 async function loadCloudPresets(){
   const badge=document.getElementById('sync-badge');
-  // 先尝试直连（GitHub Pages 静态文件一般允许跨域）
+  let remoteData=null;
+  // 先尝试直连
   try{
     const resp=await fetch(PRESETS_URL+'?t='+Date.now());
-    if(resp.ok){
-      const data=await resp.json();
-      if(data.dlt||data.ssq){
-        cloudPresets={dlt:data.dlt||[],ssq:data.ssq||[]};
-        cloudLoaded=true;
-        badge.className='sync-badge sync-ok';badge.textContent='已同步';
-        return true;
-      }
-    }
+    if(resp.ok){const data=await resp.json();if(data.dlt||data.ssq)remoteData=data;}
   }catch(e){}
   // 直连失败时通过CORS代理
-  try{
-    const resp=await fetch('https://corsproxy.io/?'+encodeURIComponent(PRESETS_URL),{signal:AbortSignal.timeout(10000)});
-    if(resp.ok){
-      const data=await resp.json();
-      if(data.dlt||data.ssq){
-        cloudPresets={dlt:data.dlt||[],ssq:data.ssq||[]};
-        cloudLoaded=true;
-        badge.className='sync-badge sync-ok';badge.textContent='已同步';
-        return true;
+  if(!remoteData){
+    try{
+      const resp=await fetch('https://corsproxy.io/?'+encodeURIComponent(PRESETS_URL),{signal:AbortSignal.timeout(10000)});
+      if(resp.ok){const data=await resp.json();if(data.dlt||data.ssq)remoteData=data;}
+    }catch(e){}
+  }
+  if(remoteData){
+    cloudPresets={dlt:remoteData.dlt||[],ssq:remoteData.ssq||[]};
+    cloudLoaded=true;
+    // 合并云端号码到localStorage，保留本地追号状态
+    ['dlt','ssq'].forEach(g=>{
+      const cloud=cloudPresets[g]||[];
+      try{
+        const local=JSON.parse(localStorage.getItem('lottery_v2_'+g)||'[]');
+        // 以云端号码为基准，逐条合并：保留本地track
+        const merged=cloud.map((cp,ci)=>{
+          // 找本地同位置同号码的preset
+          const match=local.find(lp=>arraysEqual(lp.front,cp.front)&&arraysEqual(lp.back,cp.back));
+          return{...cp,track:match?match.track:(local[ci]?local[ci].track:null)};
+        });
+        // 本地多余的不在云端的也保留
+        local.forEach(lp=>{
+          if(!cloud.some(cp=>arraysEqual(cp.front,lp.front)&&arraysEqual(cp.back,lp.back))){
+            // 检查是否已在merged中
+            if(!merged.some(m=>arraysEqual(m.front,lp.front)&&arraysEqual(m.back,lp.back))){
+              merged.push(lp);
+            }
+          }
+        });
+        localStorage.setItem('lottery_v2_'+g,JSON.stringify(merged));
+      }catch(e){
+        // localStorage无数据，直接用云端（无track）
+        localStorage.setItem('lottery_v2_'+g,JSON.stringify(cloud.map(p=>({...p,track:null}))));
       }
-    }
-  }catch(e){}
+    });
+    badge.className='sync-badge sync-ok';badge.textContent='已同步';
+    return true;
+  }
   badge.className='sync-badge sync-off';badge.textContent='未同步';
   return false;
 }
@@ -727,9 +745,9 @@ async function fetchCORS(url){
   return null;
 }
 function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+type+' toast-show';setTimeout(()=>el.className='toast',2200);}
-const DEFAULT_PRESETS={dlt:[],ssq:[{front:[6,9,11,19,20,25],back:[12],track:null},{front:[9,12,17,19,21,23],back:[6],track:null},{front:[1,15,17,20,29,30],back:[15],track:null},{front:[18,19,21,28,30,32],back:[7],track:null},{front:[2,4,16,21,24,29],back:[7],track:null},{front:[4,9,15,17,25,33],back:[14],track:null}]};
+const DEFAULT_PRESETS={dlt:[],ssq:[{mode:'normal',front:[6,9,11,19,20,25],back:[12],track:null},{mode:'normal',front:[9,12,17,19,21,23],back:[6],track:null},{mode:'normal',front:[1,15,17,20,29,30],back:[15],track:null},{mode:'normal',front:[18,19,21,28,30,32],back:[7],track:null},{mode:'normal',front:[2,4,16,21,24,29],back:[7],track:null},{mode:'normal',front:[4,9,15,17,25,33],back:[14],track:null}]};
 async function init(){
-  const EMBEDDED={dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] }, ssq: { period: '2026077', date: '2026-07-07', red: [1,4,5,14,18,25], blue: [4] }};
+  const EMBEDDED={dlt: { period: '26073', date: '2026-07-01', front: [4,10,22,23,33], back: [2,12] }, ssq: { period: '2026075', date: '2026-07-02', red: [8,12,18,21,24,30], blue: [1] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
   if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}

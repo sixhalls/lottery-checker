@@ -12,20 +12,7 @@
         1,
         10
       ],
-      "track": {
-        "enabled": true,
-        "totalPeriods": 12,
-        "startPeriod": "26074",
-        "endPeriod": "26085",
-        "history": [
-          {
-            "period": "26073",
-            "prize": 0,
-            "summary": "未中奖",
-            "hasVariable": false
-          }
-        ]
-      }
+      "track": null
     },
     {
       "front": [
@@ -39,20 +26,29 @@
         4,
         11
       ],
-      "track": {
-        "enabled": true,
-        "totalPeriods": 12,
-        "startPeriod": "26074",
-        "endPeriod": "26085",
-        "history": [
-          {
-            "period": "26073",
-            "prize": 0,
-            "summary": "未中奖",
-            "hasVariable": false
-          }
-        ]
-      }
+      "track": null
+    },
+    {
+      "mode": "dantuo",
+      "danFront": [
+        3,
+        9,
+        20
+      ],
+      "front": [
+        11,
+        12,
+        21,
+        25
+      ],
+      "danBack": [
+        8
+      ],
+      "back": [
+        7,
+        10
+      ],
+      "track": null
     }
   ],
   "ssq": [

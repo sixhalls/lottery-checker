@@ -199,7 +199,7 @@ function checkDeviceChange(){
 let currentGame='dlt', selectedFront=new Set(), selectedBack=new Set();
 let pickMode='normal'; // 'normal' or 'dantuo'
 let danFront=new Set(), tuoFront=new Set(), danBack=new Set(), tuoBack=new Set();
-let latestData = {dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] },ssq: { period: '2026077', date: '2026-07-07', red: [1,4,5,14,18,25], blue: [4] }};
+let latestData = {dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] },ssq: { period: '2026078', date: '2026-07-09', red: [7,11,14,16,27,28], blue: [6] }};
 let cloudPresets = {dlt:[],ssq:[]};
 let cloudLoaded = false;
 
@@ -744,7 +744,7 @@ async function fetchCORS(url){
 function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+type+' toast-show';setTimeout(()=>el.className='toast',2200);}
 const DEFAULT_PRESETS={dlt:[],ssq:[{mode:'normal',front:[6,9,11,19,20,25],back:[12],track:null},{mode:'normal',front:[9,12,17,19,21,23],back:[6],track:null},{mode:'normal',front:[1,15,17,20,29,30],back:[15],track:null},{mode:'normal',front:[18,19,21,28,30,32],back:[7],track:null},{mode:'normal',front:[2,4,16,21,24,29],back:[7],track:null},{mode:'normal',front:[4,9,15,17,25,33],back:[14],track:null}]};
 async function init(){
-  const EMBEDDED={dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] }, ssq: { period: '2026077', date: '2026-07-07', red: [1,4,5,14,18,25], blue: [4] }};
+  const EMBEDDED={dlt: { period: '26076', date: '2026-07-08', front: [15,20,27,28,35], back: [2,11] }, ssq: { period: '2026078', date: '2026-07-09', red: [7,11,14,16,27,28], blue: [6] }};
   if(EMBEDDED.dlt.period)latestData.dlt={...EMBEDDED.dlt};
   if(EMBEDDED.ssq.period)latestData.ssq={...EMBEDDED.ssq};
   if(!latestData.dlt.period){try{const c=JSON.parse(localStorage.getItem('lottery_cache_dlt')||'null');if(c&&c.period)latestData.dlt=c;}catch{}}
